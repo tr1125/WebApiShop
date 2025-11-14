@@ -1,0 +1,25 @@
+﻿*{
+    direction: rtl
+}
+
+.forms{
+    margin-top: 100px;
+    display: flex
+}
+
+input, span{
+    margin: 5px;
+}
+
+.existsUser, .newUser, .updatedDetails {
+    margin: 20px;
+    display: flex;
+    flex-direction: column;
+}
+u{
+    color: blue;
+}
+.newUser{
+    display: none;
+}
+

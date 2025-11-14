@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" dir="rtl" />
+    <title></title>
+    <script src="JavaScript.js" defer></script>
+    <link href="homePage.css" rel="stylesheet" />
+</head>
+<body>
+    <!--<button onclick="usetLogin()">login</button>
+    <button onclick="responsep()">post</button>-->
+    <div class="forms">
+        <div class="existsUser">
+            <span>שם משתמש</span>
+            <input required class="oldUserName" />
+            <span>סיסמא</span>
+            <input type="password" class="oldPassword" />
+            <button onclick="login()" class="oldUserButton">התחברות</button>
+            <div class="newUserLink"><u>משתמש חדש</u></div>
+        </div>
+        
+
+
+        <div class="newUser">
+            <span>שם משתמש</span>
+            <input required class="newUserName" />
+            <span>סיסמא</span>
+            <input type="password" class="newPassword" />
+            <span>שם פרטי</span>
+            <input required class="newUserfName" />
+            <span>שם משפחה</span>
+            <input required class="newUserlName" />
+            <button onclick="addUser()" class="newUserButton">רישום</button>
+            <button onclick="passwordHardness()" class="newUserButton">check password hardness</button>
+            <progress class="pb" max="4"></progress>
+        </div>
+    </div>
+
+
+</body>
+</html>

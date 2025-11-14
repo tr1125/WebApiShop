@@ -1,0 +1,30 @@
+## Build folders
+bin/
+obj/
+
+## IDE files
+.vs/
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Rider
+.idea/
+
+## Logs / temp
+*.log
+*.tlog
+*.tmp
+*.cache
+
+## OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+
+## Publish outputs
+publish/
+out/
