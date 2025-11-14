@@ -63,17 +63,9 @@ async function addUser() {
         body: JSON.stringify(newUser)
     });
 
-    const password=newUser.password
-    const postResponse2 = await fetch('api/password', {
-        method: 'POST',
-        headers: {
-            'Content-type': 'application/json'
-        },
-        body: JSON.stringify(password)
-    });
 
     
-    if (!postResponse.ok || !postResponse2.ok) {
+    if (!postResponse.ok) {
         alert("bad response")
         return;
     }
@@ -86,7 +78,7 @@ async function addUser() {
 
 async function passwordHardness() {
     const password = document.querySelector(".newPassword").value
-    const postResponse1 = await fetch('api/password/check', {
+    const postResponse1 = await fetch('api/password', {
         method: 'POST',
         headers: {
             'Content-type': 'application/json'

@@ -3,9 +3,26 @@ using System.Text.Json;
 using WebApiShop.Controllers;
 namespace Repositories
 {
-    public class UserRepository
+    public class UserRepository //: IUserRepository
     {
-        string FILE_PATH = "\"D:\\מסלול\\web api\\WebApiShop\\file.txt";
+        //string FILE_PATH = "D:\\מסלול\\web api\\WebApiShop\\file.txt";
+        string FILE_PATH = "..\\file.txt";
+
+        public List<Users> GetAllUsers()
+        {
+            List<Users> allUsers = new();
+            using (StreamReader reader = System.IO.File.OpenText(FILE_PATH))
+            {
+                string? currentUserInFile;
+                while ((currentUserInFile = reader.ReadLine()) != null)
+                {
+                    Users user = JsonSerializer.Deserialize<Users>(currentUserInFile);
+                    allUsers.Add(user);
+                }
+            }
+            return allUsers;
+        }
+
         public Users GetUserById(int id)
         {
             using (StreamReader reader = System.IO.File.OpenText(FILE_PATH))
@@ -39,15 +56,15 @@ namespace Repositories
                 while ((currentUserInFile = reader.ReadLine()) != null)
                 {
                     Users user = JsonSerializer.Deserialize<Users>(currentUserInFile);
-                    if(user.UserName==oldUser.UserName && user.Password==oldUser.Password)
+                    if (user.UserName == oldUser.UserName && user.Password == oldUser.Password)
                         return user;
                 }
-                
+
             }
             return null;
         }
 
-        public void UpdateUserDetails(int id,Users userToUp)
+        public void UpdateUserDetails(int id, Users userToUp)
         {
             string textToReplace = string.Empty;
             using (StreamReader reader = System.IO.File.OpenText(FILE_PATH))

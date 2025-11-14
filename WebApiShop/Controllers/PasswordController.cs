@@ -29,15 +29,15 @@ namespace WebApiShop.Controllers
         // POST api/<PasswordController>
         [HttpPost]
 
-        public ActionResult<Password> Post([FromBody] string password)
-        {
-            Password password1 = service.PasswordHardness(password);
-            if (password1.Level < 3) return BadRequest();
-            return Ok(password1);
-        }
+        //public ActionResult<Password> Post([FromBody] string password)
+        //{
+        //    Password password1 = service.PasswordHardness(password);
+        //    if (password1.Level < 3) return BadRequest();
+        //    return Ok(password1);
+        //}
 
-        [HttpPost("check")]
-        public Password Post1([FromBody] string password)
+        [HttpPost]
+        public Password Post([FromBody] string password)
         {
             Password password1 = service.PasswordHardness(password);
             return password1;

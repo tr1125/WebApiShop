@@ -24,23 +24,9 @@ const updateDetails = async () => {
             },
             body: JSON.stringify(updatedUser)
         });
-
-        const password = updatedUser.password
-        const postResponse2 = await fetch('api/password', {
-            method: 'POST',
-            headers: {
-                'Content-type': 'application/json'
-            },
-            body: JSON.stringify(password)
-        });
-
-        if (!postResponse.ok) {
+         if (!postResponse.ok) {
             alert("something went wrong")
             throw new Error(`error😢! status of error: ${postResponse.status}`);
-        }
-        if (!postResponse2.ok) {
-            alert("something went wrong")
-            throw new Error(`error😢! status of error: ${postResponse2.status}`);
         }
         sessionStorage.setItem("User", JSON.stringify(updatedUser))
         alert("details updated succesfully")

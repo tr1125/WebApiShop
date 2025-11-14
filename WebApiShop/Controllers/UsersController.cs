@@ -16,33 +16,11 @@ namespace WebApiShop.Controllers
     {
         UserService service = new UserService();
 
+        public List<Users> Get()
+        {
+            return service.GetAllUsers();
+        }
 
-
-        // GET: api/<UsersController>
-        [HttpGet]
-
-        
-        //public List<Users> Get()
-        //{
-        //    List<Users> allUsers = new();
-        //    using (StreamReader reader = System.IO.File.OpenText(FILE_PATH))
-        //    {
-        //        string? currentUserInFile;
-        //        while ((currentUserInFile = reader.ReadLine()) != null)
-        //        {
-        //            Users user = JsonSerializer.Deserialize<Users>(currentUserInFile);
-        //            allUsers.Add(user);
-        //        }
-        //    }
-        //    return allUsers;
-        //}
-
-        //public IEnumerable<string> Get()
-        //{
-        //    return new string[] { "user1", "user2" };
-        //}
-
-        // GET api/<UsersController>/5
         [HttpGet("{id}")]
         public ActionResult<Users> Get(int id)
         {
@@ -59,15 +37,15 @@ namespace WebApiShop.Controllers
         public ActionResult<Users> Post([FromBody] Users user)
         {
             Users user2= service.AddUserToFile(user);
+            if (user2 == null) return BadRequest();
             return CreatedAtAction(nameof(Get), new { id = user2.UserId }, user2);
         }
 
         [HttpPost("login")]
         public ActionResult<Users> Login([FromBody] ExistUser oldUser)
         {
-
-
             Users user = service.Loginto(oldUser);
+            if (user == null) return BadRequest();
             if (user.UserName == oldUser.UserName && user.Password == oldUser.Password)
                 return CreatedAtAction(nameof(Get), new { user.UserId }, user);
             return NoContent();
@@ -78,9 +56,11 @@ namespace WebApiShop.Controllers
 
         // PUT api/<UsersController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] Users userToUpdate)
+        public ActionResult<Users> Put(int id, [FromBody] Users userToUpdate)
         {
-            service.UpdateUserDetails(id, userToUpdate);
+            Users userres=service.UpdateUserDetails(id, userToUpdate);
+            if (userres == null) return BadRequest();
+            return Ok(userres);
         }
 
         // DELETE api/<UsersController>/5

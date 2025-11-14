@@ -4,18 +4,30 @@ using WebApiShop.Controllers;
 using Zxcvbn;
 namespace Services
 {
-    public class UserService
+    public class UserService// : IUserService
     {
-        UserRepository repository=new UserRepository();
+        UserRepository repository = new UserRepository();
 
-        public Users GetUserById(int id) {  return repository.GetUserById(id); }
+        public Users GetUserById(int id) { return repository.GetUserById(id); }
 
-        public Users AddUserToFile(Users user) {return repository.addUserToFile(user);
+        public Users AddUserToFile(Users user)
+        {
+            Password password=PasswordHardness(user.Password);
+            if (password.Level < 3) return null;
+            return repository.addUserToFile(user);
         }
 
         public Users Loginto(ExistUser oldUser) { return repository.Loginto(oldUser); }
 
-        public void UpdateUserDetails(int id, Users userToUp) {  repository.UpdateUserDetails(id, userToUp); }
+        public List<Users> GetAllUsers() { return repository.GetAllUsers(); }
+
+        public Users UpdateUserDetails(int id, Users userToUp) {
+
+            Password password = PasswordHardness(userToUp.Password);
+            if (password.Level <3) return null;
+            repository.UpdateUserDetails(id, userToUp);
+            return userToUp;
+        }
 
         public Password PasswordHardness(string password)
         {
