@@ -1,6 +1,4 @@
-﻿
-
-const seeNewUser = document.querySelector(".newUserLink")
+﻿const seeNewUser = document.querySelector(".newUserLink")
 const newUser = document.querySelector(".newUser")
 
 seeNewUser.addEventListener("click", e => {
@@ -42,7 +40,6 @@ async function login() {
     catch (e) {
         console.log(e)
     }
-     
 }
 
 const getExistsUser = () => {
@@ -55,48 +52,45 @@ const getExistsUser = () => {
 
 async function addUser() {
     const newUser = getNewUser();
-    const postResponse = await fetch('api/users', {
-        method: 'POST',
-        headers: {
-            'Content-type': 'application/json'
-        },
-        body: JSON.stringify(newUser)
-    });
-
-
-    
-    if (!postResponse.ok) {
-        alert("bad response")
-        return;
+    try {
+        const postResponse = await fetch('api/users', {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify(newUser)
+        });
+        if (!postResponse.ok) {
+            alert("bad response")
+            return;
+        }
+        const data = await postResponse;
+        alert("You're inside!");
     }
-    const data = await postResponse;
-    alert("You're inside!");
-
+    catch (e) {
+        console.log(e)
+    }
 }
 
 
 
 async function passwordHardness() {
     const password = document.querySelector(".newPassword").value
-    const postResponse1 = await fetch('api/password', {
-        method: 'POST',
-        headers: {
-            'Content-type': 'application/json'
-        },
-        body: JSON.stringify(password)
-    });
-    
-    
-    const data = await postResponse1.json();
-    console.log(data)
-    alert(`the password hardness is ${data.level}`)
-    const pb = document.querySelector(".pb")
-    pb.value = data.level
-    //if (!postResponse.ok) {
-    //    alert("choose another password")
-    //    return;
-    //}
-    ////const data = await postResponse;
-    //alert("You're inside!");
-
+    try {
+        const postResponse = await fetch('api/password', {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify(password)
+        });
+        const data = await postResponse.json();
+        //console.log(data)
+        alert(`the password hardness is ${data.level}`)
+        const pb = document.querySelector(".pb")
+        pb.value = data.level
+    }
+    catch (e) {
+        console.log(e)
+    }
 }

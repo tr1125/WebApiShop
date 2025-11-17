@@ -3,7 +3,7 @@ using System.Text.Json;
 using WebApiShop.Controllers;
 namespace Repositories
 {
-    public class UserRepository //: IUserRepository
+    public class UserRepository : IUserRepository
     {
         //string FILE_PATH = "D:\\מסלול\\web api\\WebApiShop\\file.txt";
         string FILE_PATH = "..\\file.txt";
@@ -58,6 +58,7 @@ namespace Repositories
                     Users user = JsonSerializer.Deserialize<Users>(currentUserInFile);
                     if (user.UserName == oldUser.UserName && user.Password == oldUser.Password)
                         return user;
+                    
                 }
 
             }

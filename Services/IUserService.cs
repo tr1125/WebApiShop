@@ -10,6 +10,6 @@ namespace Services
         Users GetUserById(int id);
         Users Loginto(ExistUser oldUser);
         Password PasswordHardness(string password);
-        void UpdateUserDetails(int id, Users userToUp);
+        Users UpdateUserDetails(int id, Users userToUp);
     }
 }

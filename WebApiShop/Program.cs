@@ -1,8 +1,11 @@
 ﻿using Repositories;
+using Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.Services.AddScoped(IUserRepository );
+builder.Services.AddScoped<IUserRepository,UserRepository>();
+
+builder.Services.AddScoped<IUserService, UserService>();
 
 //builder.
 

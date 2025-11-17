@@ -14,17 +14,21 @@ namespace WebApiShop.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        UserService service = new UserService();
+        IUserService _service;
+        public UsersController(IUserService service)
+        {
+            _service = service;
+        }
 
         public List<Users> Get()
         {
-            return service.GetAllUsers();
+            return _service.GetAllUsers();
         }
 
         [HttpGet("{id}")]
         public ActionResult<Users> Get(int id)
         {
-            Users user = service.GetUserById(id);
+            Users user = _service.GetUserById(id);
             if (user.UserId == id)
                     return Ok(user);
             return NoContent();
@@ -36,7 +40,7 @@ namespace WebApiShop.Controllers
         [HttpPost]
         public ActionResult<Users> Post([FromBody] Users user)
         {
-            Users user2= service.AddUserToFile(user);
+            Users user2= _service.AddUserToFile(user);
             if (user2 == null) return BadRequest();
             return CreatedAtAction(nameof(Get), new { id = user2.UserId }, user2);
         }
@@ -44,7 +48,7 @@ namespace WebApiShop.Controllers
         [HttpPost("login")]
         public ActionResult<Users> Login([FromBody] ExistUser oldUser)
         {
-            Users user = service.Loginto(oldUser);
+            Users user = _service.Loginto(oldUser);
             if (user == null) return BadRequest();
             if (user.UserName == oldUser.UserName && user.Password == oldUser.Password)
                 return CreatedAtAction(nameof(Get), new { user.UserId }, user);
@@ -58,7 +62,7 @@ namespace WebApiShop.Controllers
         [HttpPut("{id}")]
         public ActionResult<Users> Put(int id, [FromBody] Users userToUpdate)
         {
-            Users userres=service.UpdateUserDetails(id, userToUpdate);
+            Users userres= _service.UpdateUserDetails(id, userToUpdate);
             if (userres == null) return BadRequest();
             return Ok(userres);
         }

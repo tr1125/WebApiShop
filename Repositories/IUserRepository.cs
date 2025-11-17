@@ -4,6 +4,9 @@ namespace Repositories
 {
     public interface IUserRepository
     {
+
+
+
         Users addUserToFile(Users user);
         List<Users> GetAllUsers();
         Users GetUserById(int id);
