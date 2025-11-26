@@ -14,7 +14,7 @@ namespace WebApiShop.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        IUserService _service;
+        private readonly IUserService _service;
         public UsersController(IUserService service)
         {
             _service = service;
@@ -29,9 +29,9 @@ namespace WebApiShop.Controllers
         public ActionResult<Users> Get(int id)
         {
             Users user = _service.GetUserById(id);
-            if (user.UserId == id)
-                    return Ok(user);
-            return NoContent();
+            if (user == null)
+                return NotFound();
+            return Ok(user);
         }
              //write in c# code
         
@@ -49,28 +49,21 @@ namespace WebApiShop.Controllers
         public ActionResult<Users> Login([FromBody] ExistUser oldUser)
         {
             Users user = _service.Loginto(oldUser);
-            if (user == null) return BadRequest();
-            if (user.UserName == oldUser.UserName && user.Password == oldUser.Password)
-                return CreatedAtAction(nameof(Get), new { user.UserId }, user);
-            return NoContent();
-                
+            if (user == null)
+                return Unauthorized();
+            return Ok(user);
         }
             
         
 
         // PUT api/<UsersController>/5
         [HttpPut("{id}")]
-        public ActionResult<Users> Put(int id, [FromBody] Users userToUpdate)
+        public IActionResult Put(int id, [FromBody] Users userToUpdate)
         {
             Users userres= _service.UpdateUserDetails(id, userToUpdate);
-            if (userres == null) return BadRequest();
-            return Ok(userres);
+            if (userres == null) return BadRequest("Password is not strong enough");
+            return NoContent();
         }
 
-        // DELETE api/<UsersController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

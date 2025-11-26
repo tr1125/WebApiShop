@@ -5,8 +5,7 @@ namespace Repositories
 {
     public class UserRepository : IUserRepository
     {
-        //string FILE_PATH = "D:\\מסלול\\web api\\WebApiShop\\file.txt";
-        string FILE_PATH = "..\\file.txt";
+        private readonly string FILE_PATH = Path.Combine(Directory.GetCurrentDirectory(), "file.txt");
 
         public List<Users> GetAllUsers()
         {
