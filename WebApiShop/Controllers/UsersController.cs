@@ -14,63 +14,60 @@ namespace WebApiShop.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        IUserService _service;
+        private readonly IUserService _service;
         public UsersController(IUserService service)
         {
             _service = service;
         }
 
-        public List<Users> Get()
+        public IEnumerable<User> Get()
         {
             return _service.GetAllUsers();
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Users> Get(int id)
+        public async Task<ActionResult<User>> Get(int id)
         {
-            Users user = _service.GetUserById(id);
-            if (user.UserId == id)
-                    return Ok(user);
-            return NoContent();
+            User user =await _service.GetUserById(id);
+            if (user == null)
+                return NotFound();
+            return Ok(user);
         }
              //write in c# code
         
 
         // POST api/<UsersController>
         [HttpPost]
-        public ActionResult<Users> Post([FromBody] Users user)
+        public async Task<ActionResult<User>> Post([FromBody] User user)
         {
-            Users user2= _service.AddUserToFile(user);
+            User user2= await _service.AddUserToFile(user);
             if (user2 == null) return BadRequest();
             return CreatedAtAction(nameof(Get), new { id = user2.UserId }, user2);
         }
 
         [HttpPost("login")]
-        public ActionResult<Users> Login([FromBody] ExistUser oldUser)
+        public async Task<ActionResult<User>> Login([FromBody] ExistUser oldUser)
         {
-            Users user = _service.Loginto(oldUser);
+            User user = await _service.Loginto(oldUser);
             if (user == null) return BadRequest();
-            if (user.UserName == oldUser.UserName && user.Password == oldUser.Password)
-                return CreatedAtAction(nameof(Get), new { user.UserId }, user);
-            return NoContent();
-                
+            if (user == null)
+                return Unauthorized();
+            return Ok(user);
+
         }
             
         
 
         // PUT api/<UsersController>/5
         [HttpPut("{id}")]
-        public ActionResult<Users> Put(int id, [FromBody] Users userToUpdate)
+        public async Task<IActionResult> Put(int id, [FromBody] User userToUpdate)
         {
-            Users userres= _service.UpdateUserDetails(id, userToUpdate);
-            if (userres == null) return BadRequest();
-            return Ok(userres);
+            User userres= await _service.UpdateUserDetails(id, userToUpdate);
+            if (userres == null) return BadRequest("Password isn't hard enough");
+            return NoContent();
         }
 
         // DELETE api/<UsersController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
+       
     }
 }

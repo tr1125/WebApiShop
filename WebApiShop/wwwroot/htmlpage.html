@@ -11,10 +11,8 @@
     <button onclick="responsep()">post</button>-->
     <div class="forms">
         <div class="existsUser">
-            <span>שם משתמש</span>
-            <input required class="oldUserName" />
-            <span>סיסמא</span>
-            <input type="password" class="oldPassword" />
+            <input required class="oldUserName" placeholder="שם משתמש" />
+            <input type="password" class="oldPassword" placeholder="סיסמא"/>
             <button onclick="login()" class="oldUserButton">התחברות</button>
             <div class="newUserLink"><u>משתמש חדש</u></div>
         </div>
@@ -22,14 +20,10 @@
 
 
         <div class="newUser">
-            <span>שם משתמש</span>
-            <input required class="newUserName" />
-            <span>סיסמא</span>
-            <input type="password" class="newPassword" />
-            <span>שם פרטי</span>
-            <input required class="newUserfName" />
-            <span>שם משפחה</span>
-            <input required class="newUserlName" />
+            <input required class="newUserName" placeholder="שם משתמש" />
+            <input type="password" class="newPassword" placeholder="סיסמא" />
+            <input required class="newUserfName" placeholder="שם פרטי" />
+            <input required class="newUserlName" placeholder="שם משפחה"/>
             <button onclick="addUser()" class="newUserButton">רישום</button>
             <button onclick="passwordHardness()" class="newUserButton">check password hardness</button>
             <progress class="pb" max="4"></progress>

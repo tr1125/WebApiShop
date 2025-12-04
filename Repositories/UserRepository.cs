@@ -1,4 +1,5 @@
 ﻿using Entities;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using WebApiShop.Controllers;
 namespace Repositories
@@ -6,85 +7,60 @@ namespace Repositories
     public class UserRepository : IUserRepository
     {
         //string FILE_PATH = "D:\\מסלול\\web api\\WebApiShop\\file.txt";
-        string FILE_PATH = "..\\file.txt";
+        private readonly string FILE_PATH = "..\\file.txt";
 
-        public List<Users> GetAllUsers()
+        //at home
+        private readonly WebApiShopContext _webApiShopContext;
+        //in seminary
+        //private readonly _329389860_WebApiShopContext _webApiShopContext;
+
+        //at home
+        public UserRepository(WebApiShopContext webApiShopContext)
+        //in seminary
+        //public UserRepository(_329389860_WebApiShopContext webApiShopContext)
         {
-            List<Users> allUsers = new();
-            using (StreamReader reader = System.IO.File.OpenText(FILE_PATH))
-            {
-                string? currentUserInFile;
-                while ((currentUserInFile = reader.ReadLine()) != null)
-                {
-                    Users user = JsonSerializer.Deserialize<Users>(currentUserInFile);
-                    allUsers.Add(user);
-                }
-            }
-            return allUsers;
+            _webApiShopContext= webApiShopContext;
         }
 
-        public Users GetUserById(int id)
+        public IEnumerable<User> GetAllUsers()
         {
-            using (StreamReader reader = System.IO.File.OpenText(FILE_PATH))
-            {
-                string? currentUserInFile;
-                while ((currentUserInFile = reader.ReadLine()) != null)
-                {
-                    Users user = JsonSerializer.Deserialize<Users>(currentUserInFile);
-                    return user;
-                }
-            }
-            return null;
+            return _webApiShopContext.Users;
+        }
+
+        public async Task<User> GetUserById(int id)
+        {
+            User? user =await _webApiShopContext.Users.FindAsync(id);
+            return user;
         }
 
 
-        public Users addUserToFile(Users user)
+        public async Task<User> AddUserToFile(User user)
         {
-            int numberOfUsers = System.IO.File.ReadLines(FILE_PATH).Count();
-            user.UserId = numberOfUsers + 1;
-            string userJson = JsonSerializer.Serialize(user);
-            System.IO.File.AppendAllText(FILE_PATH, userJson + Environment.NewLine);
+            await _webApiShopContext.AddAsync(user);
+            await _webApiShopContext.SaveChangesAsync();
             return user;
 
         }
 
-        public Users Loginto(ExistUser oldUser)
+        public async Task<User?> Loginto(ExistUser oldUser)
         {
-            using (StreamReader reader = System.IO.File.OpenText(FILE_PATH))
-            {
-                string? currentUserInFile;
-                while ((currentUserInFile = reader.ReadLine()) != null)
-                {
-                    Users user = JsonSerializer.Deserialize<Users>(currentUserInFile);
-                    if (user.UserName == oldUser.UserName && user.Password == oldUser.Password)
-                        return user;
-                    
-                }
-
-            }
-            return null;
+            User? user=await _webApiShopContext.Users.FirstOrDefaultAsync(u => (u.UserName==oldUser.UserName && u.Password == oldUser.Password));
+            return user;
         }
 
-        public void UpdateUserDetails(int id, Users userToUp)
+        public async Task UpdateUserDetails(int id, User userToUp)
         {
-            string textToReplace = string.Empty;
-            using (StreamReader reader = System.IO.File.OpenText(FILE_PATH))
+            User? user = await _webApiShopContext.Users.FirstOrDefaultAsync(u => u.UserId == id);
+            if (user != null)
             {
-                string currentUserInFile;
-                while ((currentUserInFile = reader.ReadLine()) != null)
-                {
-                    Users user = JsonSerializer.Deserialize<Users>(currentUserInFile);
-                    if (user.UserId == id)
-                        textToReplace = currentUserInFile;
-                }
+                user.UserName = userToUp.UserName;
+                user.Password = userToUp.Password;
+                user.FirstName = userToUp.FirstName;
+                user.LastName = userToUp.LastName;
             }
+            await _webApiShopContext.SaveChangesAsync();
 
-            if (textToReplace != string.Empty)
-            {
-                string text = System.IO.File.ReadAllText(FILE_PATH);
-                text = text.Replace(textToReplace, JsonSerializer.Serialize(userToUp));
-                System.IO.File.WriteAllText(FILE_PATH, text);
-            }
+       
         }
 
 

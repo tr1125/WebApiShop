@@ -1,44 +1,45 @@
 ﻿using Entities;
 using Repositories;
+using System.Threading.Tasks;
 using WebApiShop.Controllers;
 using Zxcvbn;
+
+
 namespace Services
 {
     public class UserService : IUserService
     {
-        IUserRepository _repository;
-        public UserService(IUserRepository repository)
+        private readonly IUserRepository _repository;
+        private readonly IPasswordService _passwordService;
+        public UserService(IUserRepository repository, IPasswordService passwordService)
         {
             _repository = repository;
+            _passwordService = passwordService;
         }
+        //PasswordService passwordService=new PasswordService();
+        
 
-        public Users GetUserById(int id) { return _repository.GetUserById(id); }
+        public async Task<User> GetUserById(int id) { return await _repository.GetUserById(id); }
 
-        public Users AddUserToFile(Users user)
+        public async Task<User> AddUserToFile(User user)
         {
-            Password password=PasswordHardness(user.Password);
+            Password password= _passwordService.PasswordHardness(user.Password);
             if (password.Level < 3) return null;
-            return _repository.addUserToFile(user);
+            return await _repository.AddUserToFile(user);
         }
 
-        public Users Loginto(ExistUser oldUser) { return _repository.Loginto(oldUser); }
+        public async Task<User?> Loginto(ExistUser oldUser) { return await _repository.Loginto(oldUser); }
 
-        public List<Users> GetAllUsers() { return _repository.GetAllUsers(); }
+        public IEnumerable<User> GetAllUsers() { return _repository.GetAllUsers(); }
 
-        public Users UpdateUserDetails(int id, Users userToUp) {
+        public async Task<User> UpdateUserDetails(int id, User userToUp) {
 
-            Password password = PasswordHardness(userToUp.Password);
+            Password password = _passwordService.PasswordHardness(userToUp.Password);
             if (password.Level <3) return null;
-            _repository.UpdateUserDetails(id, userToUp);
+            await _repository.UpdateUserDetails(id, userToUp);
             return userToUp;
         }
 
-        public Password PasswordHardness(string password)
-        {
-            Password password1 = new Password();
-            password1.Name = password;
-            password1.Level = Zxcvbn.Core.EvaluatePassword(password).Score;
-            return password1;
-        }
+        
     }
 }

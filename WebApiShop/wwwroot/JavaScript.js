@@ -8,8 +8,8 @@ seeNewUser.addEventListener("click", e => {
 const getNewUser = () => {
     const user = {
         userName: document.querySelector(".newUserName").value,
-        fName: document.querySelector(".newUserfName").value,
-        lName: document.querySelector(".newUserlName").value,
+        firstName: document.querySelector(".newUserfName").value,
+        lastName: document.querySelector(".newUserlName").value,
         password: document.querySelector(".newPassword").value
     };
     return user;
@@ -51,14 +51,16 @@ const getExistsUser = () => {
 }
 
 async function addUser() {
-    const newUser = getNewUser();
+    const newUser2 = getNewUser();
+
+    console.log(newUser2);
     try {
         const postResponse = await fetch('api/users', {
             method: 'POST',
             headers: {
                 'Content-type': 'application/json'
             },
-            body: JSON.stringify(newUser)
+            body: JSON.stringify(newUser2)
         });
         if (!postResponse.ok) {
             alert("bad response")

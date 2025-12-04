@@ -1,13 +1,13 @@
 ﻿const message = document.querySelector(".msg")
 let oldUser = JSON.parse(sessionStorage.getItem("User"))
 
-message.textContent = `hello ${oldUser.fName}, would you like to update your details?`
+message.textContent = `hello ${oldUser.firstName}, would you like to update your details?`
 
 const getDetails = () => {
     const updatedUser = {
         userName: document.querySelector(".userName").value || oldUser.userName,
-        FName: document.querySelector(".userfName").value || oldUser.fName,
-        LName: document.querySelector(".userlName").value || oldUser.lName,
+        firstName: document.querySelector(".userfName").value || oldUser.firstName,
+        lastName: document.querySelector(".userlName").value || oldUser.lastName,
         password: document.querySelector(".password").value || oldUser.password,
         userId: oldUser.userId
     }
