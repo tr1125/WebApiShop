@@ -30,7 +30,7 @@ namespace Services
 
         public async Task<User?> Loginto(ExistUser oldUser) { return await _repository.Loginto(oldUser); }
 
-        public IEnumerable<User> GetAllUsers() { return _repository.GetAllUsers(); }
+        public async Task<IEnumerable<User>> GetAllUsers() { return await _repository.GetAllUsers(); }
 
         public async Task<User> UpdateUserDetails(int id, User userToUp) {
 

@@ -22,9 +22,9 @@ namespace Repositories
             _webApiShopContext= webApiShopContext;
         }
 
-        public IEnumerable<User> GetAllUsers()
+        public async Task<IEnumerable<User>> GetAllUsers()
         {
-            return _webApiShopContext.Users;
+            return await _webApiShopContext.Users.ToListAsync();
         }
 
         public async Task<User> GetUserById(int id)
