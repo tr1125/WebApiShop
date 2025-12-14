@@ -7,26 +7,84 @@ using Entities;
 
 namespace Repositories;
 
-public partial class
-    //at home
-    WebApiShopContext
-                        //in seminary
-                        //_329389860_WebApiShopContext
-                        : DbContext
+public partial class WebApiShopContext : DbContext
 {
-    public
-        //at home
-        WebApiShopContext(DbContextOptions<WebApiShopContext> options)
-        //in seminary
-        //_329389860_WebApiShopContext(DbContextOptions<_329389860_WebApiShopContext> options)
+    public WebApiShopContext(DbContextOptions<WebApiShopContext> options)
         : base(options)
     {
     }
+
+    public virtual DbSet<Category> Categories { get; set; }
+
+    public virtual DbSet<Order> Orders { get; set; }
+
+    public virtual DbSet<OrderItem> OrderItems { get; set; }
+
+    public virtual DbSet<Product> Products { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasKey(e => e.CetegoryId);
+
+            entity.Property(e => e.CetegoryId).HasColumnName("cetegory_id");
+            entity.Property(e => e.CategoryName)
+                .IsUnicode(false)
+                .HasColumnName("category_name");
+        });
+
+        modelBuilder.Entity<Order>(entity =>
+        {
+            entity.Property(e => e.OrderId).HasColumnName("order_id");
+            entity.Property(e => e.OrderDate).HasColumnName("order_date");
+            entity.Property(e => e.OrderSum).HasColumnName("order_sum");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Orders)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_users_orders");
+        });
+
+        modelBuilder.Entity<OrderItem>(entity =>
+        {
+            entity.ToTable("Order_items");
+
+            entity.Property(e => e.OrderItemId)
+                .ValueGeneratedNever()
+                .HasColumnName("order_item_id");
+            entity.Property(e => e.OrderId).HasColumnName("order_id");
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.Quantity).HasColumnName("quantity");
+
+            entity.HasOne(d => d.Order).WithMany(p => p.OrderItems)
+                .HasForeignKey(d => d.OrderId)
+                .HasConstraintName("FK_orders_order_items");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.OrderItems)
+                .HasForeignKey(d => d.ProductId)
+                .HasConstraintName("FK_products_order_items");
+        });
+
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.CategoryId).HasColumnName("category_id");
+            entity.Property(e => e.Description)
+                .IsUnicode(false)
+                .HasColumnName("description");
+            entity.Property(e => e.Price).HasColumnName("price");
+            entity.Property(e => e.ProductName)
+                .IsUnicode(false)
+                .HasColumnName("product_name");
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Products)
+                .HasForeignKey(d => d.CategoryId)
+                .HasConstraintName("FK_categories_products");
+        });
+
         modelBuilder.Entity<User>(entity =>
         {
             entity.Property(e => e.UserId).HasColumnName("user_id");

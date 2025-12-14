@@ -1,30 +1,21 @@
 ﻿using Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
-using WebApiShop.Controllers;
+
 namespace Repositories
 {
     public class UserRepository : IUserRepository
     {
-        //string FILE_PATH = "D:\\מסלול\\web api\\WebApiShop\\file.txt";
-        private readonly string FILE_PATH = "..\\file.txt";
 
-        //at home
         private readonly WebApiShopContext _webApiShopContext;
-        //in seminary
-        //private readonly _329389860_WebApiShopContext _webApiShopContext;
 
-        //at home
         public UserRepository(WebApiShopContext webApiShopContext)
-        //in seminary
-        //public UserRepository(_329389860_WebApiShopContext webApiShopContext)
         {
             _webApiShopContext= webApiShopContext;
         }
 
-        public IEnumerable<User> GetAllUsers()
+        public async Task<List<User>> GetAllUsers()
         {
-            return _webApiShopContext.Users;
+            return await _webApiShopContext.Users.ToListAsync();
         }
 
         public async Task<User> GetUserById(int id)
@@ -36,7 +27,7 @@ namespace Repositories
 
         public async Task<User> AddUserToFile(User user)
         {
-            await _webApiShopContext.AddAsync(user);
+            await _webApiShopContext.Users.AddAsync(user);
             await _webApiShopContext.SaveChangesAsync();
             return user;
 

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebApiShop.Controllers
+namespace Entities
 {
     public class ExistUser
     {

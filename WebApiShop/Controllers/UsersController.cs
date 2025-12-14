@@ -20,9 +20,9 @@ namespace WebApiShop.Controllers
             _service = service;
         }
 
-        public IEnumerable<User> Get()
+        public async Task<List<User>> Get()
         {
-            return _service.GetAllUsers();
+            return await _service.GetAllUsers();
         }
 
         [HttpGet("{id}")]
@@ -49,7 +49,6 @@ namespace WebApiShop.Controllers
         public async Task<ActionResult<User>> Login([FromBody] ExistUser oldUser)
         {
             User user = await _service.Loginto(oldUser);
-            if (user == null) return BadRequest();
             if (user == null)
                 return Unauthorized();
             return Ok(user);
