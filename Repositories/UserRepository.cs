@@ -33,7 +33,7 @@ namespace Repositories
 
         }
 
-        public async Task<User?> Loginto(ExistUser oldUser)
+        public async Task<User?> Loginto(User oldUser)
         {
             User? user=await _webApiShopContext.Users.FirstOrDefaultAsync(u => (u.UserName==oldUser.UserName && u.Password == oldUser.Password));
             return user;

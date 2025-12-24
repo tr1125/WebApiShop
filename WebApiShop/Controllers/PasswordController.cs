@@ -1,8 +1,9 @@
-﻿using Entities;
-using Services;
-using Repositories;
+﻿using AutoMapper;
+using Entities;
 using Microsoft.AspNetCore.Mvc;
-
+using Repositories;
+using Services;
+using DTOs;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace WebApiShop.Controllers
@@ -17,19 +18,19 @@ namespace WebApiShop.Controllers
             _service = service;
         }
         // GET: api/<PasswordController>
-        
+
         // POST api/<PasswordController>
-        
+
 
         [HttpPost]
         public Password Post([FromBody] string password)
         {
-            Password password1 =_service.PasswordHardness(password);
+            Password password1 = _service.PasswordHardness(password);
             return password1;
         }
         // PUT api/<PasswordController>/5
-        
+
         // DELETE api/<PasswordController>/5
-        
+
     }
 }

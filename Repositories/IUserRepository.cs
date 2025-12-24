@@ -8,7 +8,7 @@ namespace Repositories
         Task<User> AddUserToFile(User user);
         Task<List<User>> GetAllUsers();
         Task<User> GetUserById(int id);
-        Task<User?> Loginto(ExistUser oldUser);
+        Task<User?> Loginto(User oldUser);
         Task UpdateUserDetails(int id, User userToUp);
     }
 }

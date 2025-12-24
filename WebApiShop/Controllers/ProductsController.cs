@@ -1,8 +1,9 @@
-﻿using Entities;
-using Services;
-using Repositories;
+﻿using AutoMapper;
+using Entities;
 using Microsoft.AspNetCore.Mvc;
-
+using Repositories;
+using Services;
+using DTOs;
 namespace WebApiShop.Controllers
 {
     [Route("api/[controller]")]
@@ -16,10 +17,11 @@ namespace WebApiShop.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Product>>> Get([FromQuery] double? minPrice,[FromQuery] double? maxPrice,
-            [FromQuery] List<Category>? categories, [FromQuery] string? name)
+        public async Task<ActionResult<List<ProductDTO>>> Get([FromQuery] double? minPrice, [FromQuery] double? maxPrice,
+            [FromQuery] List<CategoryDTO>? categories, [FromQuery] string? name)
         {
-            return await _service.GetProductsByConditions(minPrice,maxPrice,categories,name);
+            
+            return await _service.GetProductsByConditions(minPrice, maxPrice, categories, name);
         }
     }
 }

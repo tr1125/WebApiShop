@@ -1,9 +1,9 @@
-﻿using Entities;
+﻿using AutoMapper;
+using Entities;
+using Microsoft.AspNetCore.Mvc;
 using Repositories;
 using Services;
-using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
-
+using DTOs;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace WebApiShop.Controllers
@@ -20,53 +20,54 @@ namespace WebApiShop.Controllers
             _service = service;
         }
 
-        public async Task<List<User>> Get()
+        [HttpGet]
+        public async Task<List<UserDTO>> Get()
         {
             return await _service.GetAllUsers();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> Get(int id)
+        public async Task<ActionResult<UserDTO>> Get(int id)
         {
-            User user =await _service.GetUserById(id);
+            UserDTO user = await _service.GetUserById(id);
             if (user == null)
                 return NotFound();
             return Ok(user);
         }
-             //write in c# code
-        
+        //write in c# code
+
 
         // POST api/<UsersController>
         [HttpPost]
-        public async Task<ActionResult<User>> Post([FromBody] User user)
+        public async Task<ActionResult<UserDTO>> Post([FromBody] UserDTO user)
         {
-            User user2= await _service.AddUserToFile(user);
+            UserDTO user2 = await _service.AddUserToFile(user);
             if (user2 == null) return BadRequest();
-            return CreatedAtAction(nameof(Get), new { id = user2.UserId }, user2);
+            return CreatedAtAction(nameof(Get), new { id = user2.Id }, user2);
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<User>> Login([FromBody] ExistUser oldUser)
+        public async Task<ActionResult<UserLoginDTO>> Login([FromBody] UserLoginDTO oldUser)
         {
-            User user = await _service.Loginto(oldUser);
+            UserLoginDTO user = await _service.Loginto(oldUser);
             if (user == null)
                 return Unauthorized();
             return Ok(user);
 
         }
-            
-        
+
+
 
         // PUT api/<UsersController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] User userToUpdate)
+        public async Task<IActionResult> Put(int id, [FromBody] UserDTO userToUpdate)
         {
-            User userres= await _service.UpdateUserDetails(id, userToUpdate);
+            UserDTO userres = await _service.UpdateUserDetails(id, userToUpdate);
             if (userres == null) return BadRequest("Password isn't hard enough");
             return NoContent();
         }
 
         // DELETE api/<UsersController>/5
-       
+
     }
 }

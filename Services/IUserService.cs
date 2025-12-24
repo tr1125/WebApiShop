@@ -1,14 +1,15 @@
-﻿using Entities;
+﻿using DTOs;
+using Entities;
 //using WebApiShop.Controllers;
 
 namespace Services
 {
     public interface IUserService
     {
-        Task<User> AddUserToFile(User user);
-        Task<List<User>> GetAllUsers();
-        Task<User> GetUserById(int id);
-        Task<User?> Loginto(ExistUser oldUser);
-        Task<User> UpdateUserDetails(int id, User userToUp);
+        Task<UserDTO> AddUserToFile(UserDTO user);
+        Task<List<UserDTO>> GetAllUsers();
+        Task<UserDTO> GetUserById(int id);
+        Task<UserLoginDTO> Loginto(UserLoginDTO oldUser);
+        Task<UserDTO> UpdateUserDetails(int id, UserDTO userToUp);
     }
 }

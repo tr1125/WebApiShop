@@ -2,7 +2,8 @@
 using Services;
 using Repositories;
 using Microsoft.AspNetCore.Mvc;
-
+using AutoMapper;
+using DTOs;
 namespace WebApiShop.Controllers
 {
     [Route("api/[controller]")]
@@ -15,8 +16,9 @@ namespace WebApiShop.Controllers
             _service = service;
         }
 
-        public async Task<List<Category>> Get()
-        {
+        [HttpGet]
+        public async Task<List<CategoryDTO>> Get()
+        { 
             return await _service.GetAllCategories();
         }
 

@@ -1,8 +1,9 @@
-﻿using Entities;
-using Services;
-using Repositories;
+﻿using AutoMapper;
+using Entities;
 using Microsoft.AspNetCore.Mvc;
-
+using Repositories;
+using Services;
+using DTOs;
 namespace WebApiShop.Controllers
 {
     [Route("api/[controller]")]
@@ -16,9 +17,9 @@ namespace WebApiShop.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Order>> Get(int id)
+        public async Task<ActionResult<OrderDTO>> Get(int id)
         {
-            Order order = await _service.GetOrderById(id);
+            OrderDTO order = await _service.GetOrderById(id);
             if (order == null)
                 return NotFound();
             return Ok(order);
@@ -26,11 +27,11 @@ namespace WebApiShop.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<Order>> Post([FromBody] Order order)
+        public async Task<ActionResult<OrderDTO>> Post([FromBody] OrderDTO order)
         {
-            Order order2 = await _service.AddOrder(order);
+            OrderDTO order2 = await _service.AddOrder(order);
             if (order2 == null) return BadRequest();
-            return CreatedAtAction(nameof(Get), new { id = order2.OrderId }, order2);
+            return CreatedAtAction(nameof(Get), new { id = order2.Id }, order2);
         }
 
     }
