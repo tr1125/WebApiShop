@@ -5,7 +5,7 @@ namespace DTOs
     public record UserLoginDTO
     (
         [Required, EmailAddress]
-        string Name,
+        string UserName,
         [Required]
         string Password
     );

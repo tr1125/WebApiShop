@@ -4,7 +4,7 @@ namespace DTOs
 {
     public record UserDTO
     (
-        int Id,
+        int UserId,
         [Required, EmailAddress]
         string UserName,
         [Required]
@@ -13,5 +13,5 @@ namespace DTOs
         string LastName,
         [Required]
         string Password
-    );
+    ); 
 }

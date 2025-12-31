@@ -8,9 +8,9 @@ namespace DTOs
 {
     public record OrderDTO
     (
-        int Id,
-        DateOnly Date,
-        double Sum,
+        int OrderId,
+        DateOnly OrderDate, 
+        double OrderSum,
         List<OrderItemDTO> OrderItems
     );
 }

@@ -9,7 +9,7 @@ namespace Services
         Task<UserDTO> AddUserToFile(UserDTO user);
         Task<List<UserDTO>> GetAllUsers();
         Task<UserDTO> GetUserById(int id);
-        Task<UserLoginDTO> Loginto(UserLoginDTO oldUser);
+        Task<UserDTO> Loginto(UserLoginDTO oldUser);
         Task<UserDTO> UpdateUserDetails(int id, UserDTO userToUp);
     }
 }

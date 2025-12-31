@@ -31,7 +31,7 @@ namespace WebApiShop.Controllers
         {
             OrderDTO order2 = await _service.AddOrder(order);
             if (order2 == null) return BadRequest();
-            return CreatedAtAction(nameof(Get), new { id = order2.Id }, order2);
+            return CreatedAtAction(nameof(Get), new { id = order2.OrderId }, order2);
         }
 
     }

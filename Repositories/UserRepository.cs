@@ -27,10 +27,14 @@ namespace Repositories
 
         public async Task<User> AddUserToFile(User user)
         {
-            await _webApiShopContext.Users.AddAsync(user);
-            await _webApiShopContext.SaveChangesAsync();
-            return user;
-
+            User? valid= await _webApiShopContext.Users.FirstOrDefaultAsync(u=>u.UserName == user.UserName);
+            if (valid == null)
+            {
+                await _webApiShopContext.Users.AddAsync(user);
+                await _webApiShopContext.SaveChangesAsync();
+                return user;
+            }
+            return null;
         }
 
         public async Task<User?> Loginto(User oldUser)

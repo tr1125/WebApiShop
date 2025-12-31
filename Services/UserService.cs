@@ -37,11 +37,11 @@ namespace Services
             return dto;
         }
 
-        public async Task<UserLoginDTO?> Loginto(UserLoginDTO oldUser)
+        public async Task<UserDTO?> Loginto(UserLoginDTO oldUser)
         {
             User user = _mapper.Map<UserLoginDTO, User>(oldUser);
-            User userres= await _repository.Loginto(user);
-            UserLoginDTO dto = _mapper.Map<User, UserLoginDTO>(userres);
+            User? userres= await _repository.Loginto(user);
+            UserDTO dto = _mapper.Map<User, UserDTO>(userres);
             return dto;
         }
 

@@ -43,13 +43,13 @@ namespace WebApiShop.Controllers
         {
             UserDTO user2 = await _service.AddUserToFile(user);
             if (user2 == null) return BadRequest();
-            return CreatedAtAction(nameof(Get), new { id = user2.Id }, user2);
+            return CreatedAtAction(nameof(Get), new { id = user2.UserId }, user2);
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<UserLoginDTO>> Login([FromBody] UserLoginDTO oldUser)
         {
-            UserLoginDTO user = await _service.Loginto(oldUser);
+            UserDTO user = await _service.Loginto(oldUser);
             if (user == null)
                 return Unauthorized();
             return Ok(user);

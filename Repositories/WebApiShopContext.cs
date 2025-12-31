@@ -53,7 +53,7 @@ public partial class WebApiShopContext : DbContext
             entity.ToTable("Order_items");
 
             entity.Property(e => e.OrderItemId)
-                .ValueGeneratedNever()
+                //.ValueGeneratedNever()
                 .HasColumnName("order_item_id");
             entity.Property(e => e.OrderId).HasColumnName("order_id");
             entity.Property(e => e.ProductId).HasColumnName("product_id");

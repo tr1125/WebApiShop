@@ -9,8 +9,8 @@ namespace DTOs
 {
     public record CategoryDTO
     (
-        int Id,
+        int CetegoryId, 
         [Required]
-        string Name
+        string CategoryName
     );
 }
