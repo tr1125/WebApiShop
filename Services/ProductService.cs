@@ -23,7 +23,7 @@ namespace Services
             List<CategoryDTO>? categories, string? name)
         {
             List<Category>? categories2 = _mapper.Map<List<CategoryDTO>, List<Category>>(categories);
-            List<Product> product= await _repository.GetProductsByConditions(minPrice, maxPrice, categories2, name);
+            (List<Product> product, int total) = await _repository.GetProductsByConditions(minPrice, maxPrice, categories2, name);
             List<ProductDTO> dto=_mapper.Map<List<Product>, List<ProductDTO>>(product);
             return dto;
 
