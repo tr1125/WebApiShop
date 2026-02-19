@@ -15,9 +15,11 @@ namespace WebApiShop.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _service;
-        public UsersController(IUserService service)
+        private readonly ILogger<UsersController> _logger;
+        public UsersController(IUserService service, ILogger<UsersController> logger)
         {
             _service = service;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -41,6 +43,8 @@ namespace WebApiShop.Controllers
         [HttpPost]
         public async Task<ActionResult<UserDTO>> Post([FromBody] UserDTO user)
         {
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
             UserDTO user2 = await _service.AddUserToFile(user);
             if (user2 == null) return BadRequest();
             return CreatedAtAction(nameof(Get), new { id = user2.UserId }, user2);
@@ -49,6 +53,7 @@ namespace WebApiShop.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserLoginDTO>> Login([FromBody] UserLoginDTO oldUser)
         {
+            _logger.LogInformation($"login attempted with user name {oldUser.UserName} and password {oldUser.Password}");
             UserDTO user = await _service.Loginto(oldUser);
             if (user == null)
                 return Unauthorized();

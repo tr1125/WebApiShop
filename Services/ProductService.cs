@@ -19,13 +19,13 @@ namespace Services
             _mapper = mapper;
         }
 
-        public async Task<List<ProductDTO>> GetProductsByConditions(double? minPrice, double? maxPrice,
-            List<CategoryDTO>? categories, string? name)
+        public async Task<(List<ProductDTO> Items, int TotalCount)> GetProductsByConditions(int position, int skip,
+            double? minPrice, double? maxPrice,
+            string? name, string? desc, int?[] categoryIds)
         {
-            List<Category>? categories2 = _mapper.Map<List<CategoryDTO>, List<Category>>(categories);
-            (List<Product> product, int total) = await _repository.GetProductsByConditions(minPrice, maxPrice, categories2, name);
+            (List<Product> product, int total) = await _repository.GetProductsByConditions(position, skip, minPrice, maxPrice,  name, desc, categoryIds);
             List<ProductDTO> dto=_mapper.Map<List<Product>, List<ProductDTO>>(product);
-            return dto;
+            return (dto, total);
 
         }
     }
