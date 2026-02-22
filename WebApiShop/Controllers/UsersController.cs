@@ -43,8 +43,6 @@ namespace WebApiShop.Controllers
         [HttpPost]
         public async Task<ActionResult<UserDTO>> Post([FromBody] UserDTO user)
         {
-            if (user == null)
-                throw new ArgumentNullException(nameof(user));
             UserDTO user2 = await _service.AddUserToFile(user);
             if (user2 == null) return BadRequest();
             return CreatedAtAction(nameof(Get), new { id = user2.UserId }, user2);
