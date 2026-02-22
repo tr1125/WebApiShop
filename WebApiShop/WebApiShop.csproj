@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <None Include="M:\web api\WebApiShop\WebApiShop\.editorconfig" />
+    <None Include="NotFoundMiddleware.cs" />
+    <None Include="RatingMiddleware.cs" />
   </ItemGroup>
 
   <ItemGroup>

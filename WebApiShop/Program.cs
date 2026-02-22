@@ -5,6 +5,8 @@ using Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using NLog.Web;
+using WebApiShop;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +27,8 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
+builder.Services.AddScoped<IRatingService, RatingService>();
+builder.Services.AddScoped<IRatingRepository, RatingRepository>();
 
 //at home
 //builder.Services.AddDbContext<WebApiShopContext>(static option => option.UseSqlServer("Data Source=(local);Initial Catalog=WebApiShop;Integrated Security=True;Trust Server Certificate=True"));
@@ -63,7 +67,13 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
+
+app.UseMiddleware<NotFoundMiddleware>();
+
 app.UseAuthorization();
+
+app.UseMiddleware<RatingMiddleware>();
+
 
 app.MapControllers();
 
