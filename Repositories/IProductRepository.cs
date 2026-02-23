@@ -6,6 +6,6 @@ namespace Repositories
     {
         Task<(List<Product> Items, int TotalCount)> GetProductsByConditions(int position, int skip,
             double? minPrice, double? maxPrice,
-            string? name, string? desc, int?[] categoryIds);
+            string? name, string? desc, int?[] categoryIds, string? color);
     }
 }

@@ -15,7 +15,9 @@ namespace DTOs
         [Required] 
         double Price,
         int CategoryId,
-        string Description
+        string Description,
+        string ImageURL,
+        string Color
     );
     
 }

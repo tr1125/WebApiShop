@@ -19,14 +19,16 @@ namespace Repositories
         }
         public async Task<(List<Product> Items, int TotalCount)> GetProductsByConditions(int position,int skip,
             double? minPrice, double? maxPrice,
-            string? name, string? desc, int?[] categoryIds)
+            string? name, string? desc, int?[] categoryIds, string? color)
         {
             var query = _webApiShopContext.Products.Where(product =>
             (desc == null ? (true) : (product.Description.Contains(desc)))
             && ((minPrice == null) ? (true) : (product.Price >= minPrice))
             && ((name == null) ? (true) : (product.ProductName == name))
             && ((maxPrice == null) ? (true) : (product.Price <= maxPrice))
-            && ((categoryIds.Length == 0) ? (true) : (categoryIds.Contains(product.CategoryId))))
+            && ((categoryIds.Length == 0) ? (true) : (categoryIds.Contains(product.CategoryId)))
+            && ((color==null) ? (true) : (product.Color==color)))
+            
             .OrderBy(product => product.Price);
             //var res = _webApiShopContext.Products;
             //return await _webApiShopContext.Products.ToListAsync();

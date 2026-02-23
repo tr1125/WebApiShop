@@ -11,6 +11,7 @@ namespace DTOs
         int OrderId,
         DateOnly OrderDate, 
         double OrderSum,
-        List<OrderItemDTO> OrderItems
+        List<OrderItemDTO> OrderItems,
+        string Status
     );
 }

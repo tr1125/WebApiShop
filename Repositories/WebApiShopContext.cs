@@ -45,6 +45,8 @@ public partial class WebApiShopContext : DbContext
             entity.Property(e => e.OrderDate).HasColumnName("order_date");
             entity.Property(e => e.OrderSum).HasColumnName("order_sum");
             entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.UserId).HasColumnName("status");
+
 
             entity.HasOne(d => d.User).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.UserId)
@@ -82,6 +84,9 @@ public partial class WebApiShopContext : DbContext
             entity.Property(e => e.ProductName)
                 .IsUnicode(false)
                 .HasColumnName("product_name");
+            entity.Property(e => e.CategoryId).HasColumnName("image_url");
+            entity.Property(e => e.CategoryId).HasColumnName("color");
+
 
             entity.HasOne(d => d.Category).WithMany(p => p.Products)
                 .HasForeignKey(d => d.CategoryId)
@@ -109,6 +114,9 @@ public partial class WebApiShopContext : DbContext
                 .HasMaxLength(100)
                 .IsFixedLength()
                 .HasColumnName("user_name");
+            entity.Property(e => e.Password)
+                .IsRequired()
+                .HasColumnName("is_admin");
         });
 
         modelBuilder.Entity<Rating>(entity =>

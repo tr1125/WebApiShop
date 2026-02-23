@@ -21,9 +21,9 @@ namespace Services
 
         public async Task<(List<ProductDTO> Items, int TotalCount)> GetProductsByConditions(int position, int skip,
             double? minPrice, double? maxPrice,
-            string? name, string? desc, int?[] categoryIds)
+            string? name, string? desc, int?[] categoryIds, string? color)
         {
-            (List<Product> product, int total) = await _repository.GetProductsByConditions(position, skip, minPrice, maxPrice,  name, desc, categoryIds);
+            (List<Product> product, int total) = await _repository.GetProductsByConditions(position, skip, minPrice, maxPrice,  name, desc, categoryIds, color);
             List<ProductDTO> dto=_mapper.Map<List<Product>, List<ProductDTO>>(product);
             return (dto, total);
 

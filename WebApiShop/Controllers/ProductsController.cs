@@ -20,11 +20,11 @@ namespace WebApiShop.Controllers
         public async Task<List<ProductDTO> /*Items, int TotalCount)*/> Get(int position,
             [FromQuery] double? minPrice, [FromQuery] double? maxPrice,
             [FromQuery] string? name,
-            [FromQuery]string? desc, [FromQuery] int?[]categoryIds)
+            [FromQuery]string? desc, [FromQuery] int?[]categoryIds, [FromQuery]string? color)
 
         {
             int skip = 10;
-            (List<ProductDTO> product, int total) = await _service.GetProductsByConditions(position, skip,minPrice, maxPrice, name, desc, categoryIds);
+            (List<ProductDTO> product, int total) = await _service.GetProductsByConditions(position, skip,minPrice, maxPrice, name, desc, categoryIds, color);
             //return (product, total);
             return product;
         }
