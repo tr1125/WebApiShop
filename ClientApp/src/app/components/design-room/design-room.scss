@@ -1,0 +1,412 @@
+// סטיילים לעיצוב החדר - עיצוב בהשראת PARK & LEE
+
+.design-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #F5E6E0 0%, #E8D5C4 50%, #2C5530 100%);
+  padding: 15px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.design-header {
+  text-align: center;
+  padding: 30px 0;
+  background: linear-gradient(135deg, #2C5530 0%, #3A6B3E 100%);
+  border-radius: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 15px 35px rgba(44, 85, 48, 0.3);
+  color: white;
+  
+  h2 {
+    color: white;
+    font-weight: 300;
+    letter-spacing: 1px;
+    margin: 0;
+  }
+}
+
+.design-content {
+  display: grid;
+  grid-template-columns: 300px 1fr 280px;
+  gap: 20px;
+  align-items: start;
+}
+
+// פאנל רהיטים
+.furniture-panel {
+  .admin-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(44, 85, 48, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  h3 {
+    color: #2C5530;
+    margin-bottom: 20px;
+    font-weight: 400;
+    font-size: 1.4rem;
+  }
+}
+
+.furniture-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.product-item {
+  cursor: grab;
+  user-select: none;
+  background: linear-gradient(135deg, #F5E6E0 0%, #F0DDD4 100%);
+  border: 1px solid rgba(44, 85, 48, 0.2);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: linear-gradient(135deg, #E8D5C4 0%, #DCC5B8 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(44, 85, 48, 0.25);
+  }
+  
+  .product-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    .product-icon {
+      font-size: 1.6rem;
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #2C5530, #3A6B3E);
+      border-radius: 10px;
+      color: white;
+    }
+    
+    .product-info {
+      flex: 1;
+      
+      strong {
+        display: block;
+        margin-bottom: 4px;
+        color: #2C5530;
+        font-weight: 500;
+      }
+      
+      small {
+        color: #A0824B;
+        font-weight: 600;
+        background: rgba(160, 130, 75, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+    }
+  }
+}
+
+// אזור החדר
+.room-panel {
+  .admin-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(44, 85, 48, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  h3 {
+    color: #2C5530;
+    margin-bottom: 20px;
+    font-weight: 400;
+    font-size: 1.4rem;
+  }
+}
+
+.room-area {
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(245, 230, 224, 0.3), transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(245, 230, 224, 0.3), transparent 50%),
+    linear-gradient(45deg, rgba(255, 255, 255, 0.8) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.8) 25%, transparent 25%);
+  background-size: 30px 30px, 30px 30px, 15px 15px, 15px 15px;
+  background-position: 0 0, 15px 15px, 0 0, 7.5px 7.5px;
+  background-color: #FEFCFA;
+  min-height: 450px;
+  border: 2px solid rgba(44, 85, 48, 0.3);
+  border-radius: 15px;
+  position: relative;
+  margin: 15px 0;
+  box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.05);
+  
+  &.cdk-drop-list-receiving {
+    background-color: rgba(245, 230, 224, 0.4);
+    border-color: #A0824B;
+    box-shadow: inset 0 0 20px rgba(160, 130, 75, 0.2);
+  }
+}
+
+.empty-room-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  
+  h4 {
+    color: #2C5530;
+    margin-bottom: 15px;
+    font-weight: 300;
+    font-size: 1.3rem;
+  }
+  
+  p {
+    margin-bottom: 8px;
+    color: #A0824B;
+    font-weight: 400;
+  }
+}
+
+// רהיטים בחדר
+.room-furniture-item {
+  position: absolute;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(160, 130, 75, 0.4);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  opacity: 0.95;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(245, 230, 224, 0.8));
+  backdrop-filter: blur(5px);
+  
+  &:hover {
+    transform: scale(1.08);
+    box-shadow: 0 8px 25px rgba(44, 85, 48, 0.3);
+    z-index: 10;
+    opacity: 1;
+    border-color: #A0824B;
+  }
+  
+  &.selected {
+    border-color: #2C5530;
+    border-width: 3px;
+    box-shadow: 0 0 20px rgba(44, 85, 48, 0.5);
+    z-index: 5;
+    background: linear-gradient(135deg, rgba(44, 85, 48, 0.1), rgba(160, 130, 75, 0.1));
+  }
+  
+  .furniture-icon-large {
+    font-size: 2rem;
+    margin-bottom: 6px;
+    color: #2C5530;
+  }
+  
+  .furniture-name {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-align: center;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(245, 230, 224, 0.9));
+    color: #2C5530;
+    padding: 3px 8px;
+    border-radius: 6px;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// פאנל בקרה
+.control-panel {
+  .admin-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(44, 85, 48, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  h3 {
+    color: #2C5530;
+    margin-bottom: 20px;
+    font-weight: 400;
+    font-size: 1.4rem;
+  }
+}
+
+.total-price {
+  background: linear-gradient(135deg, #2C5530 0%, #3A6B3E 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  margin: 20px 0;
+  box-shadow: 0 8px 25px rgba(44, 85, 48, 0.3);
+  
+  strong {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+  }
+}
+
+// אנימציות גרירה
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 12px;
+  box-shadow: 0 15px 35px rgba(44, 85, 48, 0.4);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(245, 230, 224, 0.8));
+  transform: rotate(3deg);
+  opacity: 0.95;
+  border: 2px solid rgba(160, 130, 75, 0.6);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.4;
+  background: linear-gradient(135deg, rgba(160, 130, 75, 0.2), rgba(44, 85, 48, 0.1));
+  border: 2px dashed rgba(44, 85, 48, 0.4);
+  border-radius: 8px;
+}
+
+// כפתורים
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  
+  &.btn-primary {
+    background: linear-gradient(135deg, #2C5530, #3A6B3E);
+    color: white;
+    box-shadow: 0 4px 15px rgba(44, 85, 48, 0.3);
+    
+    &:hover {
+      background: linear-gradient(135deg, #3A6B3E, #4A7B4E);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(44, 85, 48, 0.4);
+    }
+  }
+  
+  &.btn-outline-primary {
+    background: transparent;
+    color: #2C5530;
+    border: 2px solid #2C5530;
+    
+    &:hover {
+      background: #2C5530;
+      color: white;
+      transform: translateY(-2px);
+    }
+  }
+  
+  &.btn-warning {
+    background: linear-gradient(135deg, #A0824B, #B8956A);
+    color: white;
+    box-shadow: 0 4px 15px rgba(160, 130, 75, 0.3);
+    
+    &:hover {
+      background: linear-gradient(135deg, #B8956A, #D0A878);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(160, 130, 75, 0.4);
+    }
+  }
+  
+  &.btn-danger {
+    background: linear-gradient(135deg, #8B4513, #A0522D);
+    color: white;
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+    
+    &:hover {
+      background: linear-gradient(135deg, #A0522D, #CD853F);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(139, 69, 19, 0.4);
+    }
+  }
+}
+
+// הודעות
+.message {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  padding: 20px 25px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(44, 85, 48, 0.3);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  max-width: 350px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
+  &.alert-success {
+    background: linear-gradient(135deg, rgba(44, 85, 48, 0.9), rgba(58, 107, 62, 0.9));
+    color: white;
+  }
+  
+  &.alert-danger {
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.9), rgba(160, 82, 45, 0.9));
+    color: white;
+  }
+}
+// Responsive Design
+@media (max-width: 1200px) {
+  .design-content {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  
+  .furniture-panel,
+  .control-panel {
+    .admin-card {
+      max-height: 350px;
+      overflow-y: auto;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .design-container {
+    padding: 12px;
+    background: linear-gradient(135deg, #F5E6E0 0%, #2C5530 100%);
+  }
+  
+  .design-header {
+    padding: 20px 0;
+    margin-bottom: 15px;
+  }
+  
+  .room-area {
+    width: 100% !important;
+    height: 320px !important;
+    min-height: 320px;
+  }
+  
+  .furniture-panel {
+    order: 2;
+  }
+  
+  .room-panel {
+    order: 1;
+  }
+  
+  .control-panel {
+    order: 3;
+  }
+  
+  .admin-card {
+    padding: 18px !important;
+  }
+}

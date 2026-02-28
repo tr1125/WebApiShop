@@ -1,0 +1,192 @@
+/* Tailwind CSS v3 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global styles inspired by PARK & LEE design */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    direction: rtl;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Ultra Light Cream & Pearl Theme - Elegant & Minimal */
+    background: linear-gradient(135deg, #FFFEFD 0%, #F5F3F0 100%);
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
+    color: #4E4540;
+}
+
+// Beautiful card styling inspired by PARK & LEE
+.auth-card, .admin-card {
+    margin: 25px;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 35px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    width: 380px;
+    text-align: center;
+}
+
+input, .form-control {
+    width: 100%;
+    padding: 15px 20px;
+    margin: 10px 0;
+    border: 1px solid #EAE6E1;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.6);
+    color: #4E4540;
+    
+    &:focus {
+        border-color: #D7C9B1;
+        box-shadow: 0 0 0 3px rgba(215, 201, 177, 0.15);
+        background: white;
+        outline: none;
+    }
+    
+    &::placeholder {
+        color: #B0A69E;
+    }
+}
+
+button, .btn {
+    padding: 15px 25px;
+    /* Soft Champagne Pearl Gradient */
+    background: linear-gradient(135deg, #E6DAC8, #D7C9B1);
+    color: #4E4540;
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+    
+    &:hover {
+        background: linear-gradient(135deg, #D7C9B1, #C5B59A);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(215, 201, 177, 0.3);
+    }
+    
+    &.btn-outline-primary {
+        background: transparent;
+        color: #8D8178;
+        border: 1px solid #C5BBA4;
+        text-shadow: none;
+        
+        &:hover {
+            background: #FFFEFD;
+            border-color: #8D8178;
+            color: #4E4540;
+        }
+    }
+    
+    &.btn-warning {
+        background: linear-gradient(135deg, #A0824B, #B8956A);
+        
+        &:hover {
+            background: linear-gradient(135deg, #B8956A, #D0A878);
+        }
+    }
+    
+    &.btn-danger {
+        background: linear-gradient(135deg, #8B4513, #A0522D);
+        
+        &:hover {
+            background: linear-gradient(135deg, #A0522D, #CD853F);
+        }
+    }
+}
+
+.link-button {
+    background: none !important;
+    color: #A0824B !important;
+    text-decoration: underline;
+    padding: 8px 15px !important;
+    
+    &:hover {
+        background: none !important;
+        color: #2C5530 !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+}
+
+.forms {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    flex-wrap: wrap;
+    padding: 20px;
+}
+
+.navbar {
+    background: linear-gradient(135deg, #2C5530, #3A6B3E) !important;
+    box-shadow: 0 8px 25px rgba(44, 85, 48, 0.3);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 15px 0;
+}
+
+// Cards and containers
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(44, 85, 48, 0.15);
+}
+
+// Alert styles
+.alert {
+    border-radius: 12px;
+    border: none;
+    padding: 20px 25px;
+    backdrop-filter: blur(10px);
+    
+    &.alert-success {
+        background: linear-gradient(135deg, rgba(44, 85, 48, 0.9), rgba(58, 107, 62, 0.9));
+        color: white;
+    }
+    
+    &.alert-danger {
+        background: linear-gradient(135deg, rgba(139, 69, 19, 0.9), rgba(160, 82, 45, 0.9));
+        color: white;
+    }
+}
+
+// Simple hover effects
+.hover-shadow:hover {
+    box-shadow: 0 8px 25px rgba(44, 85, 48, 0.2);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+    .auth-card, .admin-card {
+        width: 95%;
+        margin: 15px;
+        padding: 25px 20px;
+    }
+    
+    .forms {
+        padding: 15px;
+    }
+}

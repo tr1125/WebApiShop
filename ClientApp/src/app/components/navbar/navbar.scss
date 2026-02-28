@@ -1,0 +1,57 @@
+// סטיילים לתפריט הניווט - עיצוב בהשראת PARK & LEE
+.navbar {
+  background: linear-gradient(135deg, #2C5530 0%, #3A6B3E 100%) !important;
+  box-shadow: 0 8px 25px rgba(44, 85, 48, 0.3);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 15px 0;
+  
+  .navbar-brand {
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: white !important;
+    letter-spacing: 1.2px;
+    
+    &:hover {
+      transform: scale(1.08);
+      transition: all 0.3s ease;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+  }
+  
+  .nav-link {
+    font-weight: 400;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.9) !important;
+    margin: 0 5px;
+    padding: 10px 15px !important;
+    letter-spacing: 0.5px;
+    
+    &:hover {
+      background: linear-gradient(135deg, rgba(245, 230, 224, 0.2), rgba(255, 255, 255, 0.1));
+      color: white !important;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    &.active {
+      background: linear-gradient(135deg, #F5E6E0, #E8D5C4);
+      color: #2C5530 !important;
+      font-weight: 500;
+      box-shadow: 0 4px 15px rgba(245, 230, 224, 0.4);
+    }
+  }
+  
+  .navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.3);
+    
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+}

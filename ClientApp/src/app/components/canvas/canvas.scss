@@ -1,0 +1,94 @@
+// CanvasComponent styles
+// Most styling is handled by Tailwind utility classes in the template.
+// This file contains custom styles that cannot be expressed as Tailwind utilities.
+
+// ── Glass panel (sidebar / topbar) ──────────────────────────────────────────
+// Applied via .glass-panel class in the template.
+:host {
+  display: block;
+  height: 100vh;
+}
+
+// Global glass-panel class (used on all sidebars and top bar)
+// Cannot be in a scoped :host because it needs to match elements inside.
+.glass-panel {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem; // rounded-2xl equivalent
+  box-shadow: 0 4px 12px rgba(120, 100, 200, 0.1);
+}
+
+// ── Furniture item ───────────────────────────────────────────────────────────
+.furniture-item {
+  // Ensure z-index so items sit above background layers
+  z-index: 10;
+}
+
+// ── Resize handle ────────────────────────────────────────────────────────────
+.resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  background: #a78bfa; // purple-400
+  border-radius: 4px 0 4px 0;
+  cursor: se-resize;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    background: #7c3aed; // purple-700
+  }
+}
+
+// ── Show resize handle on hover even when item is not selected ──────────────
+.furniture-item:hover .resize-handle {
+  opacity: 1 !important;
+}
+
+// ── Palette button ───────────────────────────────────────────────────────────
+.palette-btn {
+  background: transparent;
+  border: none;
+  text-align: right;
+  transition: background 0.15s ease;
+}
+
+// ── CDK drag preview ─────────────────────────────────────────────────────────
+// Override default CDK drag styles when item is being dragged
+.cdk-drag-preview {
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 40px rgba(120, 80, 220, 0.3);
+  opacity: 0.85;
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.8);
+  border: 2px solid #a78bfa;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.25;
+  background: rgba(167, 139, 250, 0.15);
+  border: 2px dashed #a78bfa;
+  border-radius: 0.75rem;
+}
+
+// ── Scrollbar styling ────────────────────────────────────────────────────────
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.4);
+  border-radius: 99px;
+
+  &:hover {
+    background: rgba(124, 58, 237, 0.5);
+  }
+}

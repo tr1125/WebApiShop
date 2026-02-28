@@ -1,0 +1,340 @@
+<!-- =========================================================
+  Room Design Studio - Cream & Wood Theme
+  ========================================================= -->
+<div class="flex flex-col h-screen w-screen overflow-hidden bg-[linear-gradient(135deg,#fdfbf7_0%,#a68b6c_100%)] text-[#5d4037] font-sans" dir="rtl">
+
+  <!-- TOP BAR -->
+  <header class="h-14 bg-[#fffdf5]/80 backdrop-blur border-b border-[#d7ccc8] flex items-center justify-between px-4 shrink-0 shadow-sm z-20">
+    <div class="flex items-center gap-2">
+      <div class="p-1.5 bg-[#efebe9] rounded-full border border-[#d7ccc8]">
+        <img [src]="getIcon('home')" class="w-5 h-5 opacity-80">
+      </div>
+      <span class="text-base font-bold tracking-tight text-[#4e342e]">Room Design Studio</span>
+    </div>
+
+    <div class="flex items-center gap-4 text-xs">
+      <!-- User Info -->
+      <div class="flex flex-col items-center">
+        <span class="text-[10px] text-[#8d6e63]">שלום, {{ isGuest ? 'אורח' : (currentUser?.firstName) }}</span>
+        <div class="font-bold text-[#5d4037]">{{ isGuest ? 'Guest' : currentUser?.lastName }}</div>
+      </div>
+      
+      <div class="h-6 w-px bg-[#d7ccc8]"></div>
+
+      <!-- Stats -->
+      <div class="flex items-center gap-3">
+        <div class="flex flex-col items-center">
+          <span class="text-[10px] text-[#8d6e63]">סה"כ</span>
+          <span class="font-bold text-[#5d4037]">₪{{ totalPrice.toFixed(0) }}</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <span class="text-[10px] text-[#8d6e63]">פריטים</span>
+          <span class="font-bold text-[#5d4037]">{{ furnitureItems.length }}</span>
+        </div>
+      </div>
+      
+      <div class="h-6 w-px bg-[#d7ccc8]"></div>
+
+      <button (click)="clearAll()" class="flex flex-row items-center font-bold justify-center gap-1.5 text-[#5d4037] hover:text-[#3e2723] transition px-3 h-8 bg-[#efebe9] hover:bg-[#d7ccc8] rounded-full border border-transparent hover:border-[#d7ccc8] shadow-sm">
+        <img [src]="getIcon('trash')" class="w-3 h-3 opacity-70">
+        <span class="text-[10px]">נקה הכל</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <div class="flex flex-1 gap-3 p-3 overflow-hidden min-h-0">
+
+    <!-- LEFT: FILTER PANEL -->
+    <aside class="w-56 shrink-0 flex flex-col bg-[#fffdf5]/80 backdrop-blur border border-[#d7ccc8] rounded-xl shadow-sm overflow-hidden">
+      <div class="px-4 pt-4 pb-2 border-b border-[#d7ccc8]/50">
+        <div class="flex items-center gap-2 text-[#5d4037]">
+          <img [src]="getIcon('search')" class="w-4 h-4 opacity-70">
+          <h2 class="font-bold text-base">סינון ואיתור</h2>
+        </div>
+      </div>
+      
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 text-xs custom-scrollbar">
+
+        <!-- Search Name -->
+        <div>
+          <label class="block font-bold text-[#5d4037] mb-1 text-[10px] uppercase tracking-wider">שם מוצר</label>
+          <div class="relative">
+            <input type="text" [(ngModel)]="filterName" placeholder="חיפוש..."
+              (ngModelChange)="applyFilters()"
+              class="w-full border border-[#d7ccc8] rounded-full px-3 py-1.5 text-xs bg-white/50 text-[#5d4037] focus:outline-none focus:ring-1 focus:ring-[#a1887f] placeholder-[#a1887f]/50 shadow-inner">
+            <img [src]="getIcon('search')" class="absolute left-2.5 top-2 w-3 h-3 opacity-40">
+          </div>
+        </div>
+
+        <!-- Categories -->
+        <div>
+          <label class="block font-bold text-[#5d4037] mb-1 text-[10px] uppercase tracking-wider">קטגוריות</label>
+          <div class="space-y-1 max-h-32 overflow-y-auto pr-1">
+            <label *ngFor="let cat of categories"
+              class="flex items-center gap-2 cursor-pointer group p-0.5 hover:bg-[#efebe9] rounded transition">
+              <div class="relative flex items-center justify-center w-4 h-4 border border-[#8d6e63] rounded bg-white group-hover:border-[#5d4037]">
+                <input type="checkbox"
+                  [checked]="isCategorySelected(cat.cetegoryId)"
+                  (change)="toggleCategory(cat.cetegoryId)"
+                  class="peer appearance-none absolute inset-0 w-full h-full cursor-pointer z-10 opacity-0">
+                <span class="hidden peer-checked:block text-[#5d4037] text-xs font-bold">✓</span>
+              </div>
+              <span class="text-[#5d4037] font-medium group-hover:text-[#3e2723]">{{ cat.categoryName }}</span>
+            </label>
+            <p *ngIf="categories.length === 0" class="text-[10px] text-[#8d6e63]">טוען קטגוריות...</p>
+          </div>
+        </div>
+
+        <!-- Price Range -->
+        <div>
+          <label class="block font-bold text-[#5d4037] mb-1 text-[10px] uppercase tracking-wider">מחיר (₪)</label>
+          <div class="flex items-center gap-2">
+            <input type="number" [(ngModel)]="filterMinPrice" placeholder="מ-"
+              (change)="applyFilters()"
+              class="w-1/2 border border-[#d7ccc8] rounded-lg px-2 py-1 text-center bg-white/50 focus:ring-1 focus:ring-[#8d6e63] outline-none shadow-inner">
+            <span class="text-[#8d6e63]">-</span>
+            <input type="number" [(ngModel)]="filterMaxPrice" placeholder="עד"
+              (change)="applyFilters()"
+              class="w-1/2 border border-[#d7ccc8] rounded-lg px-2 py-1 text-center bg-white/50 focus:ring-1 focus:ring-[#8d6e63] outline-none shadow-inner">
+          </div>
+        </div>
+
+        <!-- Color Filter -->
+        <div>
+          <label class="block font-bold text-[#5d4037] mb-1 text-[10px] uppercase tracking-wider">צבע</label>
+          <input type="text" [(ngModel)]="filterColor" placeholder="לדוג' חום, לבן..."
+              (ngModelChange)="applyFilters()"
+              class="w-full border border-[#d7ccc8] rounded-full px-3 py-1.5 text-xs bg-white/50 text-[#5d4037] focus:outline-none focus:ring-1 focus:ring-[#a1887f] placeholder-[#a1887f]/50 shadow-inner">
+        </div>
+
+        <!-- Description Filter -->
+        <div>
+          <label class="block font-bold text-[#5d4037] mb-1 text-[10px] uppercase tracking-wider">חיפוש בתיאור</label>
+          <input type="text" [(ngModel)]="filterDesc" placeholder="מילת חיפוש..."
+              (ngModelChange)="applyFilters()"
+              class="w-full border border-[#d7ccc8] rounded-full px-3 py-1.5 text-xs bg-white/50 text-[#5d4037] focus:outline-none focus:ring-1 focus:ring-[#a1887f] placeholder-[#a1887f]/50 shadow-inner">
+        </div>
+
+        <button (click)="clearFilters()"
+          class="w-full py-2 rounded-full bg-[#efebe9] hover:bg-[#d7ccc8] text-[#5d4037] font-bold text-[10px] transition border border-[#d7ccc8] shadow-sm flex items-center justify-center gap-2">
+          <img [src]="getIcon('filter')" class="w-3 h-3 opacity-60">
+          אפס סינונים
+        </button>
+      </div>
+    </aside>
+
+    <!-- CENTER: CANVAS (Perspective Room) -->
+    <div class="flex flex-col flex-1 items-center justify-center relative rounded-xl overflow-hidden shadow-md border border-[#d7ccc8] bg-white">
+      
+      <!-- Room Background Layers -->
+      <div class="absolute inset-x-0 top-0 h-[65%] bg-[#fcfbf9] border-b border-[#e0e0e0]"></div> <!-- Wall -->
+      <div class="absolute inset-x-0 bottom-0 h-[35%] bg-[url('/assets/images/textures/wood_floor.jpg')] bg-[#d7ccc8]" 
+           style="clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);"></div>
+
+      <!-- Canvas Area -->
+      <div class="relative w-full h-full overflow-hidden" #canvasEl>
+        
+        <!-- Draggable Items -->
+        <div *ngFor="let item of items; trackBy: trackById"
+            class="absolute cursor-move select-none group"
+            cdkDrag
+            [cdkDragFreeDragPosition]="getDragReset(item)"
+            (cdkDragEnded)="onDragEnded($event, item)"
+            (mousedown)="selectItem(item)"
+            [style.left.px]="item.x"
+            [style.top.px]="item.y"
+            [style.width.px]="item.width"
+            [style.height.px]="item.height"
+            [style.zIndex]="item.type === 'rug' ? 5 : (item.type === 'table' ? 15 : 10)">
+          
+          <!-- Selected Highlight Box -->
+          <div class="absolute -inset-1 border border-[#8d6e63] border-dashed rounded opacity-0 pointer-events-none transition-opacity"
+               [class.opacity-100]="selectedId === item.id">
+             
+             <!-- Manual Resize Handle (Bottom-Right) -->
+             <div class="absolute -bottom-1.5 -right-1.5 w-4 h-4 bg-[#8d6e63] rounded-sm cursor-se-resize shadow flex items-center justify-center z-50 pointer-events-auto"
+                  (mousedown)="startResize($event, item)">
+                <div class="w-1.5 h-1.5 border-r border-b border-[#fffdf5]"></div>
+             </div>
+          </div>
+
+          <!-- Item Content (Stretched) -->
+          <div class="w-full h-full relative flex items-center justify-center">
+             <!-- Image (fill to stretch) -->
+             <img *ngIf="item.imageURL" [src]="imageUrl(item.imageURL)" class="w-full h-full object-fill drop-shadow-lg">
+             
+             <!-- Icon Fallback -->
+             <div *ngIf="!item.imageURL" class="w-full h-full flex items-center justify-center">
+               <img [src]="iconUrl(item.label || '')" class="w-full h-full object-fill opacity-90">
+             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: CATALOG PANEL (One item per row) -->
+    <aside class="w-60 shrink-0 flex flex-col bg-[#fffdf5]/80 backdrop-blur border border-[#d7ccc8] rounded-xl shadow-sm overflow-hidden">
+      <div class="px-4 pt-4 pb-2 border-b border-[#d7ccc8]/50 overflow-hidden">
+        <div class="flex items-center gap-2 text-[#5d4037]">
+          <img [src]="getIcon('cart')" class="w-4 h-4 opacity-70">
+          <h2 class="font-bold text-base">קטלוג</h2>
+        </div>
+      </div>
+      
+      <div class="flex-1 overflow-y-auto p-3 space-y-4 custom-scrollbar">
+        
+        <!-- Group By Category -->
+        <div *ngFor="let group of groupedProducts">
+          <div class="flex items-center gap-2 mb-2 px-1">
+            <div class="h-px bg-[#d7ccc8] flex-1"></div>
+            <h3 class="text-[10px] font-bold text-[#8d6e63] uppercase tracking-widest">{{ group.category }}</h3>
+            <div class="h-px bg-[#d7ccc8] flex-1"></div>
+          </div>
+          
+          <!-- Grid Cols 1 -->
+          <div class="flex flex-col gap-2">
+            <button *ngFor="let p of group.products"
+              (click)="selectCatalogProduct(p)"
+              class="flex items-center gap-3 p-2 rounded-lg border border-[#efebe9] bg-[#fffdf5] shadow-sm hover:shadow hover:border-[#bcaaa4] transition group text-right"
+              [class.ring-1]="selectedCatalogProduct?.productId === p.productId"
+              [class.ring-[#8d6e63]]="selectedCatalogProduct?.productId === p.productId">
+              
+              <!-- Product Image (Circular) -->
+              <div class="w-12 h-12 shrink-0 rounded-full bg-white border border-[#efebe9] shadow-inner flex items-center justify-center overflow-hidden">
+                <img *ngIf="p.imageURL" [src]="imageUrl(p.imageURL)" class="w-full h-full object-cover">
+                <img *ngIf="!p.imageURL" [src]="iconUrl(p.productName)" class="w-8 h-8 object-contain opacity-80">
+              </div>
+
+              <!-- Product Info -->
+              <div class="flex flex-col min-w-0 flex-1">
+                <span class="text-xs font-bold text-[#5d4037] truncate">{{ p.productName }}</span>
+                <span class="text-[10px] text-[#8d6e63] font-mono">₪{{ p.price }}</span>
+              </div>
+              
+              <!-- Add Action -->
+              <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="w-5 h-5 bg-[#8d6e63] rounded-full flex items-center justify-center shadow text-white text-[10px]">+</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <button *ngIf="hasMoreProducts" (click)="loadMore()"
+          class="w-full py-2 mt-2 rounded-lg border border-dashed border-[#8d6e63] text-[#8d6e63] text-[10px] font-bold hover:bg-[#efebe9] transition">
+          עוד מוצרים
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- BOTTOM BAR (Ultra Compact) -->
+  <footer class="mx-4 mb-2 mt-1 px-4 h-12 bg-[#fffdf5]/90 backdrop-blur-md rounded-full border border-[#d7ccc8] shadow-md flex items-center justify-center gap-8 shrink-0 z-40">
+
+    <button (click)="logout()"
+      class="flex flex-row items-center justify-center gap-1.5 group px-3 h-8 hover:bg-[#efebe9] rounded-full transition min-w-[70px] border border-transparent hover:border-[#d7ccc8]/50">
+      <img [src]="getIcon('home')" class="w-3.5 h-3.5 opacity-60 sepia group-hover:opacity-100 transition block">
+      <span class="text-[11px] font-bold text-[#8d6e63] group-hover:text-[#5d4037] leading-none translate-y-[1px]">בית</span>
+    </button>
+
+    <button (click)="navigateToProfile()"
+      class="flex flex-row items-center justify-center gap-1.5 group px-3 h-8 hover:bg-[#efebe9] rounded-full transition min-w-[70px] border border-transparent hover:border-[#d7ccc8]/50"
+      [class.opacity-50]="isGuest"
+      [attr.title]="isGuest ? 'כניסה נדרשת לעדכון פרטים' : null">
+      <img [src]="getIcon('user')" class="w-3.5 h-3.5 opacity-60 sepia group-hover:opacity-100 transition block">
+      <span class="text-[11px] font-bold text-[#8d6e63] group-hover:text-[#5d4037] leading-none translate-y-[1px]">פרופיל</span>
+    </button>
+
+    <button (click)="navigateToPersonalArea()"
+      class="flex flex-row items-center justify-center gap-1.5 group px-3 h-8 hover:bg-[#efebe9] rounded-full transition min-w-[90px] border border-transparent hover:border-[#d7ccc8]/50"
+      [class.opacity-50]="isGuest"
+      [attr.title]="isGuest ? 'כניסה נדרשת לאיזור האישי' : null">
+      <img [src]="getIcon('orders')" class="w-3.5 h-3.5 opacity-60 sepia group-hover:opacity-100 transition block">
+      <span class="text-[11px] font-bold text-[#8d6e63] group-hover:text-[#5d4037] leading-none translate-y-[1px]">איזור אישי</span>
+    </button>
+
+    <div class="hidden md:block w-px h-6 bg-[#d7ccc8]/50 mx-2"></div>
+
+    <button (click)="openProductModal()"
+      [disabled]="!selectedCatalogProduct"
+      class="flex flex-row items-center justify-center gap-1.5 group px-3 h-8 hover:bg-[#efebe9] rounded-full transition min-w-[70px] border border-transparent hover:border-[#d7ccc8]/50"
+      [class.opacity-40]="!selectedCatalogProduct"
+      [class.cursor-not-allowed]="!selectedCatalogProduct">
+      <img [src]="getIcon('search')" class="w-3.5 h-3.5 opacity-60 sepia group-hover:opacity-100 transition block">
+      <span class="text-[11px] font-bold text-[#8d6e63] leading-none translate-y-[1px]">פרטים</span>
+    </button>
+
+    <button (click)="removeSelectedFromCanvas()"
+      [disabled]="!selectedId"
+      class="flex flex-row items-center justify-center gap-1.5 group px-3 h-8 hover:bg-[#efebe9] rounded-full transition min-w-[70px] border border-transparent hover:border-[#d7ccc8]/50"
+      [class.opacity-40]="!selectedId"
+      [class.cursor-not-allowed]="!selectedId">
+      <img [src]="getIcon('trash')" class="w-3.5 h-3.5 opacity-60 sepia group-hover:opacity-100 transition block">
+      <span class="text-[11px] font-bold text-[#8d6e63] group-hover:text-[#5d4037] leading-none translate-y-[1px]">הסר</span>
+    </button>
+
+    <button (click)="navigateToPersonalArea()"
+      [disabled]="!canCheckout"
+      [title]="isGuest ? 'יש להתחבר כדי לסגור הזמנה' : ''"
+      class="flex flex-row items-center justify-center gap-1.5 px-4 h-8 bg-[#8d6e63]/10 hover:bg-[#8d6e63]/20 rounded-full transition text-[#8d6e63] hover:text-[#5d4037] border border-transparent hover:border-[#8d6e63]/30 min-w-[80px]"
+      [class.opacity-40]="!canCheckout"
+      [class.cursor-not-allowed]="!canCheckout">
+      <img [src]="getIcon('check')" class="w-3.5 h-3.5 opacity-80 block" [class.grayscale]="!canCheckout">
+      <span class="text-[11px] font-bold leading-none translate-y-[1px]">סיום</span>
+    </button>
+  </footer>
+
+  <!-- PRODUCT DETAIL MODAL (Cream/Wood Style) -->
+  <div *ngIf="isProductModalOpen && selectedCatalogProduct"
+    class="fixed inset-0 bg-[#5d4037]/20 backdrop-blur-sm flex items-center justify-center z-50"
+    (click)="closeProductModal()">
+    <div class="bg-[#fffdf5] rounded-2xl shadow-2xl border border-[#d7ccc8] max-w-sm w-full mx-4 p-5 relative"
+      (click)="$event.stopPropagation()">
+
+      <button (click)="closeProductModal()"
+        class="absolute top-3 right-3 text-[#8d6e63] hover:text-[#5d4037] w-6 h-6 rounded-full hover:bg-[#efebe9] flex items-center justify-center transition">
+        ✕
+      </button>
+
+      <div class="w-full h-40 rounded-xl overflow-hidden mb-3 bg-white border border-[#efebe9] flex items-center justify-center shadow-inner">
+        <img *ngIf="selectedCatalogProduct.imageURL"
+          [src]="imageUrl(selectedCatalogProduct.imageURL)"
+          [alt]="selectedCatalogProduct.productName"
+          class="w-full h-full object-cover">
+        <img *ngIf="!selectedCatalogProduct.imageURL"
+          [src]="iconUrl(selectedCatalogProduct.productName)"
+          class="w-20 h-20 object-contain opacity-80">
+      </div>
+
+      <h3 class="text-base font-bold text-[#5d4037] mb-0.5 text-center">{{ selectedCatalogProduct.productName }}</h3>
+      <p class="text-lg font-bold text-[#8d6e63] mb-3 text-center">₪{{ selectedCatalogProduct.price }}</p>
+
+      <div class="space-y-2 text-xs text-[#5d4037]/80 bg-[#efebe9]/50 p-3 rounded-lg border border-[#efebe9]">
+        <div *ngIf="selectedCatalogProduct.description" class="flex gap-2">
+          <span class="font-bold shrink-0 text-[#8d6e63]">תיאור:</span>
+          <span>{{ selectedCatalogProduct.description }}</span>
+        </div>
+        <div *ngIf="selectedCatalogProduct.color" class="flex gap-2">
+          <span class="font-medium shrink-0">צבע:</span>
+          <span>{{ selectedCatalogProduct.color }}</span>
+        </div>
+      </div>
+
+
+
+      <!-- Quantity + Add to Cart (Cream/Wood Style) -->
+      <div class="border-t border-[#d7ccc8] pt-4 mt-4">
+        <label class="block text-xs font-bold text-[#8d6e63] uppercase tracking-wider mb-2">כמות להוספה</label>
+        <div class="flex gap-3 mb-3">
+          <input type="number" min="1" [(ngModel)]="modalQuantity"
+            class="w-20 border border-[#d7ccc8] rounded-xl px-3 py-2 text-center bg-[#fffdf5] text-[#5d4037] font-bold outline-none focus:ring-2 focus:ring-[#8d6e63] shadow-inner">
+          <button (click)="addToCanvasFromModal()" 
+            class="flex-1 rounded-xl bg-[#8d6e63] hover:bg-[#6d4c41] text-[#fffdf5] font-bold transition shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2">
+            <img [src]="getIcon('add_cart')" class="w-5 h-5 invert brightness-0 filter">
+            <span>הוסף לחדר</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

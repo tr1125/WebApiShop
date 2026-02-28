@@ -1,0 +1,187 @@
+// סגנון כללי לאפליקציה - עיצוב בהשראת PARK & LEE
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #F5E6E0 0%, #E8D5C4 50%, #2C5530 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+// צבעי משתנים כלליים
+:root {
+  --primary-green: #2C5530;
+  --secondary-green: #3A6B3E;
+  --accent-brown: #A0824B;
+  --light-cream: #F5E6E0;
+  --medium-cream: #E8D5C4;
+  --white-transparent: rgba(255, 255, 255, 0.95);
+}
+
+// סגנון כללי לכפתורים
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  
+  &.btn-primary {
+    background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+    color: white;
+    
+    &:hover {
+      background: linear-gradient(135deg, var(--secondary-green), #4A7B4E);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(44, 85, 48, 0.4);
+    }
+  }
+  
+  &.btn-outline-primary {
+    background: transparent;
+    color: var(--primary-green);
+    border: 2px solid var(--primary-green);
+    
+    &:hover {
+      background: var(--primary-green);
+      color: white;
+      transform: translateY(-2px);
+    }
+  }
+  
+  &.btn-warning {
+    background: linear-gradient(135deg, var(--accent-brown), #B8956A);
+    color: white;
+    
+    &:hover {
+      background: linear-gradient(135deg, #B8956A, #D0A878);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(160, 130, 75, 0.4);
+    }
+  }
+  
+  &.btn-danger {
+    background: linear-gradient(135deg, #8B4513, #A0522D);
+    color: white;
+    
+    &:hover {
+      background: linear-gradient(135deg, #A0522D, #CD853F);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(139, 69, 19, 0.4);
+    }
+  }
+}
+
+// כרטיסים כלליים
+.card {
+  background: var(--white-transparent);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(44, 85, 48, 0.15);
+  
+  .card-header {
+    background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+    color: white;
+    border-radius: 20px 20px 0 0;
+    padding: 25px;
+    border: none;
+  }
+  
+  .card-body {
+    padding: 30px;
+  }
+}
+
+// שדות טופס כלליים
+.form-control {
+  border-radius: 10px;
+  border: 2px solid rgba(44, 85, 48, 0.2);
+  padding: 15px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+  
+  &:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 0.3rem rgba(44, 85, 48, 0.15);
+    background: white;
+    outline: none;
+  }
+}
+
+.form-label {
+  font-weight: 500;
+  color: var(--primary-green);
+  margin-bottom: 8px;
+  font-size: 1.05rem;
+}
+
+// הודעות כלליות
+.alert {
+  border-radius: 12px;
+  border: none;
+  padding: 20px 25px;
+  backdrop-filter: blur(10px);
+  
+  &.alert-success {
+    background: linear-gradient(135deg, rgba(44, 85, 48, 0.9), rgba(58, 107, 62, 0.9));
+    color: white;
+  }
+  
+  &.alert-danger {
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.9), rgba(160, 82, 45, 0.9));
+    color: white;
+  }
+  
+  &.alert-warning {
+    background: linear-gradient(135deg, rgba(160, 130, 75, 0.9), rgba(184, 149, 106, 0.9));
+    color: white;
+  }
+  
+  &.alert-info {
+    background: linear-gradient(135deg, rgba(44, 85, 48, 0.1), rgba(160, 130, 75, 0.1));
+    color: var(--primary-green);
+    border: 1px solid rgba(44, 85, 48, 0.3);
+  }
+}
+
+// אנימציות כלליות
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+// Responsive כללי
+@media (max-width: 768px) {
+  .btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+  
+  .card-body {
+    padding: 20px;
+  }
+  
+  .form-control {
+    padding: 12px 16px;
+  }
+}
