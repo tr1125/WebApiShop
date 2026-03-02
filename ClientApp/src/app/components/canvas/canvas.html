@@ -130,10 +130,12 @@
       <div class="absolute top-[2%] h-[64%] w-[60%] left-[18.5%] overflow-hidden bg-transparent pointer-events-none" style="z-index: 1;">
         <div class="absolute inset-0 transition-all duration-500"
           [style.background-image]="currentWallImage ? 'url(' + currentWallImage + ')' : 'none'" 
-          style="background-repeat: repeat; 
+          style="background-repeat: no-repeat; 
                  background-size: 250px auto; 
+                 background-size:cover;
+                
                  background-position: bottom center;
-                 background-color: transparent;">
+                 background-color: transparent;"> 
         </div>
         <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-b from-black/5 to-transparent"></div>
         <div class="absolute inset-x-0 bottom-0 h-px bg-[#d7ccc8]/30"></div>

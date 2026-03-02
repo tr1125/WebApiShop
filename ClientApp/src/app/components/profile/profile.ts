@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
+import { HttpClient } from '@angular/common/http';
 import { User } from '../../models/user.model';
 import { finalize } from 'rxjs';
 
@@ -19,12 +20,15 @@ export class ProfileComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   currentUser: User | null = null;
+  passwordStrength = 0;
+  passwordStrengthLabel = '';
 
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient
   ) {
     this.profileForm = this.formBuilder.group({
       userName: ['', Validators.required],
@@ -49,6 +53,27 @@ export class ProfileComponent implements OnInit {
       address: (this.currentUser.address || '').trim(),
       phone: (this.currentUser.phone || '').trim(),
       password: ''
+    });
+
+    // מעקב אחר חוזק הסיסמה
+    this.profileForm.get('password')?.valueChanges.subscribe(password => {
+      if (password) {
+        this.http.post<any>('http://localhost:5013/api/password', `"${password}"`, {
+          headers: { 'Content-Type': 'application/json' }
+        }).subscribe({
+          next: (result) => {
+            this.passwordStrength = result.level;
+            this.passwordStrengthLabel = this.getStrengthLabel(result.level);
+          },
+          error: () => {
+            this.passwordStrength = 0;
+            this.passwordStrengthLabel = '';
+          }
+        });
+      } else {
+        this.passwordStrength = 0;
+        this.passwordStrengthLabel = '';
+      }
     });
   }
 
@@ -96,6 +121,13 @@ export class ProfileComponent implements OnInit {
           }
         });
     }
+  }
+
+  private getStrengthLabel(strength: number): string {
+    if (strength <= 1) return 'חלשה';
+    if (strength === 2) return 'בינונית';
+    if (strength === 3) return 'טובה';
+    return 'חזקה מאוד';
   }
 
   goBack() {

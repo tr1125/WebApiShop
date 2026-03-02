@@ -77,11 +77,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
     // Initialize user-specific canvas storage
     const user = this.authService.getCurrentUser();
     const userId = user?.userId || 'guest';
-    const savedFloor = localStorage.getItem(`floor_${userId}`);
-  const savedWall = localStorage.getItem(`wall_${userId}`);
+    const isGuest = !user;
+    
+    // Use sessionStorage for guest, localStorage for registered users
+    const storage = isGuest ? sessionStorage : localStorage;
+    const savedFloor = storage.getItem(`floor_${userId}`);
+    const savedWall = storage.getItem(`wall_${userId}`);
   
-  if (savedFloor) this.currentFloorImage = savedFloor;
-  if (savedWall) this.currentWallImage = savedWall;
+    if (savedFloor) this.currentFloorImage = savedFloor;
+    if (savedWall) this.currentWallImage = savedWall;
 
     this.stateService.setUser(user?.userId ?? null);
 
@@ -138,6 +142,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     this.productService.getProducts(filter).subscribe({
       next: products => {
+        products.forEach(p => {
+          console.log('Product:', p.productName, 'ImageURL:', p.imageURL, 'Cleaned:', this.CleanimageUrl(p.imageURL));
+        });
         this.catalogProducts = append
           ? [...this.catalogProducts, ...products]
           : products;
@@ -210,18 +217,20 @@ export class CanvasComponent implements OnInit, OnDestroy {
     
     if (type === 'floors') {
       this.currentFloorImage = this.CleanimageUrl(product.imageURL);
-      const userId = this.authService.getCurrentUser()?.userId || 'guest';
-      localStorage.setItem(`floor_${userId}`, this.currentFloorImage); 
-      console.log('Floor URL loaded:', this.currentFloorImage); // לבדיקה בקונסול
+      const user = this.authService.getCurrentUser();
+      const userId = user?.userId || 'guest';
+      const storage = !user ? sessionStorage : localStorage;
+      storage.setItem(`floor_${userId}`, this.currentFloorImage); 
       return;
     }
 
     if (type === 'walls') {
       this.currentWallImage = this.CleanimageUrl(product.imageURL);
-      const userId = this.authService.getCurrentUser()?.userId || 'guest';
-      localStorage.setItem(`wall_${userId}`, this.currentWallImage);
-      console.log('Wall URL loaded:', this.currentWallImage); // לבדיקה בקונסול
-      return; // עוצרים כדי שלא יתווסף כאלמנט נגרר
+      const user = this.authService.getCurrentUser();
+      const userId = user?.userId || 'guest';
+      const storage = !user ? sessionStorage : localStorage;
+      storage.setItem(`wall_${userId}`, this.currentWallImage);
+      return;
     }
 
     const newItem: CanvasItem = {

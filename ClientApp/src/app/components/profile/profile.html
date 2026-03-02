@@ -68,6 +68,19 @@
         <div class="space-y-1">
           <label class="text-xs font-bold text-[#8d6e63] mr-1">סיסמה חדשה (אופציונלי)</label>
           <input type="password" formControlName="password" class="w-full h-10 px-3 bg-white border border-[#d7ccc8] rounded-xl text-[#5d4037] focus:outline-none focus:border-[#8d6e63]" placeholder="השאיר ריק אם אין שינוי">
+          
+          <!-- Password Strength -->
+          <div class="mt-1 flex items-center gap-2" *ngIf="profileForm.get('password')?.value">
+            <div class="flex-1 h-1.5 bg-[#efebe9] rounded-full overflow-hidden">
+              <div class="h-full transition-all duration-300"
+                   [style.width.%]="(passwordStrength / 4) * 100"
+                   [class.bg-red-400]="passwordStrength <= 1"
+                   [class.bg-yellow-400]="passwordStrength === 2"
+                   [class.bg-green-500]="passwordStrength >= 3">
+              </div>
+            </div>
+            <span class="text-[10px] text-[#8d6e63]">{{ passwordStrengthLabel }}</span>
+          </div>
         </div>
 
         <div class="flex flex-col gap-2 mt-2">

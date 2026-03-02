@@ -1,6 +1,33 @@
 <!-- Auth Page - Cream & Wood Theme -->
 <div class="flex flex-col min-h-screen w-full bg-[linear-gradient(135deg,#fdfbf7_0%,#a68b6c_100%)] text-[#5d4037] font-sans" dir="rtl">
   
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark sticky top-0 z-50" 
+       style="background: #efebe9 !important; border-bottom: 1px solid #d7ccc8; box-shadow: none;">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold hover:scale-110 transition" routerLink="/" style="color: #5d4037 !important; letter-spacing: 0; display: flex; align-items: center; gap: 0.5rem;">
+        <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: white; border: 1px solid #d7ccc8;">
+          <img src="/images/icons/logo.png" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        Room Design Studio
+      </a>
+      <button class="navbar-toggler" type="button" 
+              data-bs-toggle="collapse" data-bs-target="#navbarNav"
+              aria-controls="navbarNav" aria-expanded="false" 
+              aria-label="Toggle navigation"
+              style="border-color: #a1887f;">
+        <span class="navbar-toggler-icon" style="filter: invert(1) sepia(1) saturate(5) hue-rotate(320deg);"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link px-3" routerLink="/design" style="color: #8d6e63 !important; font-weight: bold;"><span class="me-1">🏠</span>עיצוב חדרים</a></li>
+          <li class="nav-item"><a class="nav-link px-3" routerLink="/admin" style="color: #8d6e63 !important; font-weight: bold;"><span class="me-1">⚙️</span>אזור מנהל</a></li>
+          <li class="nav-item"><a class="nav-link px-3" routerLink="/auth" style="color: #8d6e63 !important; font-weight: bold;"><span class="me-1">👤</span>התחברות</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
   <!-- Content Container -->
   <div class="flex-1 flex items-center justify-center p-4 pb-12">
     

@@ -1,14 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth';
+import { HttpClient } from '@angular/common/http';
 
 // קומפוננט אימות משתמשים - התחברות והרשמה
 @Component({
   selector: 'app-auth',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './auth.html',
   styleUrls: ['./auth.scss']
 })
@@ -22,11 +23,13 @@ export class AuthComponent implements OnInit {
   isLoading = false; // מצב טעינה
   errorMessage = ''; // הודעת שגיאה
   passwordStrength = 0; // חוזק סיסמה
+  passwordStrengthLabel = ''; // תווית חוזק סיסמה
   
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {
     // יצירת טופס התחברות
     this.loginForm = this.formBuilder.group({
@@ -46,20 +49,32 @@ export class AuthComponent implements OnInit {
   }
   
   ngOnInit() {
-    // בדיקה אם המשתמש כבר מחובר - בוטל לפי בקשת המשתמש (תמיד להציג דף התחברות)
-    // if (this.authService.isAuthenticated()) {
-    //   const dest = this.authService.isAdmin() ? '/admin' : '/design';
-    //   this.router.navigate([dest]);
-    // }
-    
-    // מעקב אחר חוזק הסיסמה
+    // מעקב אחר חוזק הסיסמה - קריאה לשרת
     this.registerForm.get('password')?.valueChanges.subscribe(password => {
-      this.passwordStrength = this.calculatePasswordStrength(password);
+      if (password) {
+        this.http.post<any>('http://localhost:5013/api/password', `"${password}"`, {
+          headers: { 'Content-Type': 'application/json' }
+        }).subscribe({
+          next: (result) => {
+            this.passwordStrength = result.level;
+            this.passwordStrengthLabel = this.getStrengthLabel(result.level);
+          },
+          error: () => {
+            this.passwordStrength = 0;
+            this.passwordStrengthLabel = '';
+          }
+        });
+      } else {
+        this.passwordStrength = 0;
+        this.passwordStrengthLabel = '';
+      }
     });
   }
   
   // כניסה ללא חשבון - מנווט ישירות לדף העיצוב (sessionStorage בלבד)
   guestLogin(): void {
+    localStorage.removeItem('floor_guest');
+    localStorage.removeItem('wall_guest');
     this.router.navigate(['/design']);
   }
 
@@ -138,27 +153,11 @@ export class AuthComponent implements OnInit {
     }
   }
   
-  // חישוב חוזק סיסמה כמו ב-wwwroot
-  private calculatePasswordStrength(password: string): number {
-    if (!password) return 0;
-    
-    let strength = 0;
-    
-    // קריטריונים לחוזק סיסמה
-    if (password.length >= 6) strength++;
-    if (/[a-z]/.test(password)) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^a-zA-Z0-9]/.test(password)) strength++; // תווים מיוחדים
-    
-    return Math.min(strength, 4);
-  }
-
   // תווית חוזק סיסמה
-  get passwordStrengthLabel(): string {
-    if (this.passwordStrength <= 1) return 'חלשה';
-    if (this.passwordStrength === 2) return 'בינונית';
-    if (this.passwordStrength === 3) return 'טובה';
+  private getStrengthLabel(strength: number): string {
+    if (strength <= 1) return 'חלשה';
+    if (strength === 2) return 'בינונית';
+    if (strength === 3) return 'טובה';
     return 'חזקה מאוד';
   }
 }
