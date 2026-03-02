@@ -10,7 +10,7 @@
       <!-- Logo/Icon -->
       <div class="flex flex-col items-center gap-2">
         <div class="p-3 bg-[#efebe9] rounded-full border border-[#d7ccc8]">
-          <span class="text-2xl">👤</span>
+          <img src="/images/icons/person.png" class="w-6 h-6">
         </div>
         <h2 class="text-2xl font-bold text-[#4e342e]">
           {{ isLoginMode ? 'התחברות' : 'הרשמה' }}
@@ -22,7 +22,7 @@
 
       <!-- Error Message -->
       <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start gap-2">
-        <span>⚠️</span>
+        <img src="/images/icons/details.png" class="w-4 h-4 mt-0.5">
         <span>{{ errorMessage }}</span>
       </div>
 
@@ -123,8 +123,8 @@
         <button 
           class="w-full py-2.5 bg-[#efebe9] hover:bg-[#d7ccc8] text-[#5d4037] font-bold rounded-xl transition text-sm flex items-center justify-center gap-2 border border-[#d7ccc8]"
           (click)="guestLogin()">
+          <img src="/images/icons/person_add.png" class="w-4 h-4">
           <span>כניסה כאורח (ללא חשבון)</span>
-          <span>👤</span>
         </button>
       </div>
 

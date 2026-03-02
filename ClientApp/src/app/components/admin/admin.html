@@ -21,8 +21,9 @@
 
   <!-- Main Content -->
   <div class="flex-1 p-6 pb-12 w-full">
-    <div class="container mx-auto max-w-5xl space-y-6">
+    <div class="container mx-auto max-w-7xl space-y-6">
       
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Products Management Card -->
       <div class="bg-[#fffdf5]/80 backdrop-blur border border-[#d7ccc8] rounded-2xl shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-[#d7ccc8]/50 flex justify-between items-center">
@@ -96,7 +97,6 @@
           </form>
 
           <!-- Product List -->
-          <!-- Product List -->
           <div *ngIf="products.length > 0" class="space-y-3">
             <div *ngFor="let product of products; trackBy: trackByProductId" class="flex items-center justify-between p-3 bg-white/60 border border-[#d7ccc8]/60 rounded-xl hover:bg-white/80 transition group">
               <div class="flex items-center gap-4">
@@ -124,6 +124,17 @@
           
           <div *ngIf="products.length === 0" class="text-center py-10 text-[#8d6e63]">
             לא נמצאו מוצרים
+          </div>
+
+          <!-- Pagination -->
+          <div *ngIf="products.length > 0" class="flex items-center justify-between mt-6 pt-4 border-t border-[#d7ccc8]/50">
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="px-4 py-2 bg-[#efebe9] hover:bg-[#d7ccc8] text-[#5d4037] font-bold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
+              <img src="images/icons/details.png" alt="prev" class="w-3 h-3 rotate-180"> הקודם
+            </button>
+            <span class="text-sm font-bold text-[#8d6e63]">עמוד {{ currentPage }}</span>
+            <button (click)="nextPage()" [disabled]="!hasMorePages" class="px-4 py-2 bg-[#efebe9] hover:bg-[#d7ccc8] text-[#5d4037] font-bold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
+              הבא <img src="images/icons/details.png" alt="next" class="w-3 h-3">
+            </button>
           </div>
 
         </div>
@@ -190,8 +201,10 @@
           </div>
         </div>
       </div>
+      </div>
 
-       <!-- Orders Management -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Orders Management -->
        <div class="bg-[#fffdf5]/80 backdrop-blur border border-[#d7ccc8] rounded-2xl shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-[#d7ccc8]/50 flex justify-between items-center">
             <h3 class="text-lg font-bold text-[#4e342e] flex items-center gap-2">
@@ -240,7 +253,6 @@
         </div>
        </div>
 
-
         <!-- Users Management -->
         <div class="bg-[#fffdf5]/80 backdrop-blur border border-[#d7ccc8] rounded-2xl shadow-sm overflow-hidden">
             <div class="px-6 py-4 border-b border-[#d7ccc8]/50 flex justify-between items-center">
@@ -269,37 +281,7 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Stats -->
-        <div class="bg-[#fffdf5]/80 backdrop-blur border border-[#d7ccc8] rounded-2xl shadow-sm overflow-hidden p-6">
-             <h3 class="text-lg font-bold text-[#4e342e] flex items-center gap-2 mb-4">
-                <img src="images/icons/details.png" alt="stats" class="w-5 h-5"> סטטיסטיקות
-            </h3>
-
-             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div class="bg-white border border-[#d7ccc8] rounded-xl p-4 flex flex-col items-center">
-                    <span class="text-3xl font-bold text-[#5d4037]">{{ products.length }}</span>
-                    <span class="text-xs text-[#8d6e63]">מוצרים</span>
-                </div>
-                 <div class="bg-white border border-[#d7ccc8] rounded-xl p-4 flex flex-col items-center">
-                    <span class="text-3xl font-bold text-[#5d4037]">{{ categories.length }}</span>
-                    <span class="text-xs text-[#8d6e63]">קטגוריות</span>
-                </div>
-                 <div class="bg-white border border-[#d7ccc8] rounded-xl p-4 flex flex-col items-center">
-                    <span class="text-3xl font-bold text-[#5d4037]">{{ getActiveProductsCount() }}</span>
-                    <span class="text-xs text-[#8d6e63]">מוצרים פעילים</span>
-                </div>
-                 <div class="bg-white border border-[#d7ccc8] rounded-xl p-4 flex flex-col items-center">
-                    <span class="text-3xl font-bold text-[#5d4037]">₪{{ getTotalValue() }}</span>
-                    <span class="text-xs text-[#8d6e63]">ערך מלאי</span>
-                </div>
-             </div>
-
-             <button (click)="generateReport()" class="w-full flex items-center justify-center gap-2 py-3 bg-[#5d4037] hover:bg-[#4e342e] text-[#fffdf5] font-bold rounded-xl transition shadow-md">
-                <img src="images/icons/details.png" alt="report" class="w-5 h-5 brightness-0 invert filter">
-                <span>יצירת דו"ח מנהלים</span>
-             </button>
-        </div>
+      </div>
 
     </div>
   </div>

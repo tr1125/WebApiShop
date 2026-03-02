@@ -5,6 +5,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Tahoma', 'sans-serif'],
+      },
       backdropBlur: {
         md: '12px',
       },

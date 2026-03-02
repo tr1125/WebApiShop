@@ -4,8 +4,11 @@
      style="background: #efebe9 !important; border-bottom: 1px solid #d7ccc8; box-shadow: none;">
   <div class="container-fluid">
     <!-- שם האפליקציה -->
-    <a class="navbar-brand fw-bold" routerLink="/" style="color: #5d4037 !important; letter-spacing: 0;">
-      🏠 {{ appName }}
+    <a class="navbar-brand fw-bold" routerLink="/" style="color: #5d4037 !important; letter-spacing: 0; display: flex; align-items: center; gap: 0.5rem;">
+      <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: white; border: 1px solid #d7ccc8;">
+        <img src="/images/icons/logo.png" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      {{ appName }}
     </a>
     
     <!-- כפתור תפריט נייד -->

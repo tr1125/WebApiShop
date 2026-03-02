@@ -9,6 +9,7 @@ namespace Services
                    double? minPrice, double? maxPrice, 
                    string? name, string? desc, int?[] categoryIds, string? color);
                    
+        Task<ProductDTO?> GetProductById(int id);
         Task<ProductDTO> AddProduct(ProductDTO productDto);
         Task<ProductDTO> UpdateProduct(int id, ProductDTO productDto);
         Task<bool> DeleteProduct(int id);

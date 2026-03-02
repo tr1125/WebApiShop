@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { User } from '../../models/user.model';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
@@ -22,7 +23,8 @@ export class ProfileComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.profileForm = this.formBuilder.group({
       userName: ['', Validators.required],
@@ -63,25 +65,36 @@ export class ProfileComponent implements OnInit {
         lastName: this.profileForm.value.lastName,
         address: this.profileForm.value.address,
         phone: this.profileForm.value.phone,
-        password: this.profileForm.value.password,
+        password: this.profileForm.value.password || this.currentUser.password,
         isAdmin: this.currentUser.isAdmin
       };
 
-      this.authService.updateUser(this.currentUser.userId, updatedUser).subscribe({
-        next: () => {
-          this.currentUser = updatedUser;
-          this.successMessage = 'הפרטים עודכנו בהצלחה!';
-          this.isLoading = false;
-        },
-        error: (error) => {
-          if (error.status === 400) {
-            this.errorMessage = 'הסיסמה חלשה מדי - נסה סיסמה חזקה יותר.';
-          } else {
-            this.errorMessage = 'שגיאה בעדכון הפרטים. נסה שוב.';
+      this.authService.updateUser(this.currentUser.userId, updatedUser)
+        .pipe(
+          finalize(() => {
+            this.isLoading = false;
+            this.cdr.markForCheck();
+          })
+        )
+        .subscribe({
+          next: (response) => {
+            this.currentUser = response;
+            this.successMessage = 'הפרטים עודכנו בהצלחה!';
+            this.cdr.markForCheck();
+            setTimeout(() => {
+              this.successMessage = '';
+              this.cdr.markForCheck();
+            }, 3000);
+          },
+          error: (error) => {
+            if (error.status === 400) {
+              this.errorMessage = 'הסיסמה חלשה מדי - נסה סיסמה חזקה יותר.';
+            } else {
+              this.errorMessage = 'שגיאה בעדכון הפרטים. נסה שוב.';
+            }
+            this.cdr.markForCheck();
           }
-          this.isLoading = false;
-        }
-      });
+        });
     }
   }
 

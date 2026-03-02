@@ -7,33 +7,11 @@ import { FormsModule } from '@angular/forms';
 import { CdkDrag, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { Subscription } from 'rxjs';
 import { DesignRoomStateService } from '../../services/design-room-state';
-import { CanvasItem } from '../../models/canvas.model';
+import { CanvasItem, ResizeSession, StaticEntry } from '../../models/canvas.model';
 import { ProductService } from '../../services/product';
 import { Product, Category, ProductFilter } from '../../models/product.model';
 import { AuthService } from '../../services/auth';
 import { Router } from '@angular/router';
-
-// -------------------------------------------------------------------
-// Active resize session
-// -------------------------------------------------------------------
-interface ResizeSession {
-  itemId: string;
-  startMouseX: number;
-  startMouseY: number;
-  startWidth: number;
-  startHeight: number;
-}
-
-// -------------------------------------------------------------------
-// Static palette entry (wall / floor — not from API)
-// -------------------------------------------------------------------
-interface StaticEntry {
-  type: CanvasItem['type'];
-  label: string;
-  emoji: string;
-  defaultWidth: number;
-  defaultHeight: number;
-}
 
 @Component({
   selector: 'app-canvas',
@@ -78,6 +56,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
   isProductModalOpen = false;
   modalQuantity = 1;
 
+  currentFloorImage: string | null = null;
+  currentWallImage: string | null = null;
+
   private subs = new Subscription();
 
   constructor(
@@ -95,7 +76,16 @@ export class CanvasComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Initialize user-specific canvas storage
     const user = this.authService.getCurrentUser();
+    const userId = user?.userId || 'guest';
+    const savedFloor = localStorage.getItem(`floor_${userId}`);
+  const savedWall = localStorage.getItem(`wall_${userId}`);
+  
+  if (savedFloor) this.currentFloorImage = savedFloor;
+  if (savedWall) this.currentWallImage = savedWall;
+
     this.stateService.setUser(user?.userId ?? null);
+
+
 
     // Subscribe to canvas items
     this.subs.add(
@@ -215,9 +205,25 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   /** Add item helper */
   addItemToCanvas(product: Product, offsetX = 0, offsetY = 0): void {
-    const type = this.guessType(product.productName);
-    const size = this.defaultSizeFor(type);
+    const size = this.defaultSizeFor(product.categoryId);
+    const type = this.getCategoryName(product.categoryId);
     
+    if (type === 'floors') {
+      this.currentFloorImage = this.CleanimageUrl(product.imageURL);
+      const userId = this.authService.getCurrentUser()?.userId || 'guest';
+      localStorage.setItem(`floor_${userId}`, this.currentFloorImage); 
+      console.log('Floor URL loaded:', this.currentFloorImage); // לבדיקה בקונסול
+      return;
+    }
+
+    if (type === 'walls') {
+      this.currentWallImage = this.CleanimageUrl(product.imageURL);
+      const userId = this.authService.getCurrentUser()?.userId || 'guest';
+      localStorage.setItem(`wall_${userId}`, this.currentWallImage);
+      console.log('Wall URL loaded:', this.currentWallImage); // לבדיקה בקונסול
+      return; // עוצרים כדי שלא יתווסף כאלמנט נגרר
+    }
+
     const newItem: CanvasItem = {
       id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       type,
@@ -226,7 +232,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       width:  size.w,
       height: size.h,
       label:  product.productName,
-      emoji:  this.emojiFor(type),
       productId: product.productId,
       price: product.price,
       color: product.color,
@@ -241,21 +246,20 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.selectedId = newItem.id;
   }
 
-  /** Click on wall / floor static entry → add to canvas */
-  addStaticToCanvas(entry: StaticEntry): void {
-    const newItem: CanvasItem = {
-      id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      type:   entry.type,
-      x:      Math.round(this.canvasWidth  / 2 - entry.defaultWidth  / 2),
-      y:      Math.round(this.canvasHeight / 2 - entry.defaultHeight / 2),
-      width:  entry.defaultWidth,
-      height: entry.defaultHeight,
-      label:  entry.label,
-      emoji:  entry.emoji,
-    };
-    this.stateService.addItem(newItem);
-    this.selectedId = newItem.id;
-  }
+  // /** Click on wall / floor static entry → add to canvas */
+  // addStaticToCanvas(entry: StaticEntry): void {
+  //   const newItem: CanvasItem = {
+  //     id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+  //     type:   entry.type,
+  //     x:      Math.round(this.canvasWidth  / 2 - entry.defaultWidth  / 2),
+  //     y:      Math.round(this.canvasHeight / 2 - entry.defaultHeight / 2),
+  //     width:  entry.defaultWidth,
+  //     height: entry.defaultHeight,
+  //     label:  entry.label,
+  //   };
+  //   this.stateService.addItem(newItem);
+  //   this.selectedId = newItem.id;
+  // }
 
   // —
   //  Product modal
@@ -428,10 +432,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   get totalPrice(): number {
-    return this.furnitureItems.reduce((sum, item) => {
-      const product = this.allProducts.find(p => p.productId === item.productId);
-      return sum + (product?.price ?? 0);
-    }, 0);
+    return this.furnitureItems.reduce((sum, item) => sum + (item.price ?? 0), 0);
   }
 
   trackById(_: number, item: CanvasItem): string { return item.id; }
@@ -459,28 +460,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
     return url.startsWith('http') ? url : `http://localhost:4200/${url}`;
   }
 
-  iconUrl(name: string): string {
-    const n = (name || '').toLowerCase();
-    const base = 'images/icons/';
-    if (n.includes('sofa') || n.includes('ספה')) return base + 'chair.png';
-    if (n.includes('chair') || n.includes('כורס') || n.includes('כסא')) return base + 'chair.png';
-    if (n.includes('table') || n.includes('שולחן') || n.includes('desk')) return base + 'table_bar.png';
-    if (n.includes('lamp') || n.includes('mno') || n.includes('light')) return base + 'lamp.png';
-    if (n.includes('clock') || n.includes('שעון')) return base + 'clock.png';
-    if (n.includes('curtain') || n.includes('וילון')) return base + 'curtains.png';
-    if (n.includes('plant') || n.includes('pot') || n.includes('עציץ')) return base + 'potted.png';
-    if (n.includes('picture') || n.includes('tmo') || n.includes('art')) return base + 'wall_art.png';
-    if (n.includes('rug') || n.includes('shati') || n.includes('carpet')) return base + '1137.png';
-    if (n.includes('window') || n.includes('alon')) return base + 'window.png';
-    if (n.includes('wall') || n.includes('kir')) return base + 'wall.png';
-    return base + 'details.png';
-  }
-
   getIcon(name: string): string {
     const n = (name || '').toLowerCase();
     const base = 'images/icons/';
     
-    // System icons
     if (n === 'home') return base + 'home.png';
     if (n === 'user') return base + 'person.png';
     if (n === 'trash') return base + 'delete.png';
@@ -489,51 +472,76 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (n === 'cart') return base + 'shopping_cart.png';
     if (n === 'add_cart') return base + 'add_shopping_cart.png';
     if (n === 'check') return base + 'check.png';
-    if (n === 'logout') return base + 'logout.png'; 
-    if (n === 'edit') return base + 'edit.png';
     if (n === 'orders') return base + 'orders.png';
-
-    // Fallback based on name content
-    if (n.includes('chair') || n.includes('sofa')) return base + 'chair.png';
-    if (n.includes('table') || n.includes('desk')) return base + 'table_bar.png';
-    if (n.includes('lamp') || n.includes('light')) return base + 'lamp.png';
-    if (n.includes('clock')) return base + 'clock.png';
-    if (n.includes('curtain')) return base + 'curtains.png';
-    if (n.includes('plant') || n.includes('pot')) return base + 'potted.png';
-    if (n.includes('picture') || n.includes('art')) return base + 'wall_art.png';
-    if (n.includes('window')) return base + 'window.png';
-    if (n.includes('wall')) return base + 'wall.png';
     
     return base + 'details.png';
   }
 
-  guessType(name: string): CanvasItem['type'] {
-    const n = name.toLowerCase();
-    if (n.includes('ספה')   || n.includes('sofa'))                           return 'sofa';
-    if (n.includes('כורסא') || n.includes('chair'))                          return 'chair';
-    if (n.includes('שולחן') || n.includes('table') || n.includes('desk'))    return 'table';
-    if (n.includes('שטיח')  || n.includes('rug'))                            return 'rug';
-    if (n.includes('ארון')  || n.includes('wardrobe'))                       return 'wardrobe';
-    if (n.includes('מיטה')  || n.includes('bed'))                            return 'bed';
-    return 'chair';
+  private getCategoryName(categoryId: number): CanvasItem['type'] {
+    const cat = this.categories.find(c => c.cetegoryId === categoryId);
+    return (cat?.categoryName.toLowerCase() as CanvasItem['type']) || 'unknown';
   }
 
-  emojiFor(type: CanvasItem['type']): string {
-    const map: Record<string, string> = {
-      sofa: '🛋️', chair: '🪑', table: '🪤', rug: '🧵',
-      wardrobe: '🚪', desk: '🏢', bed: '🛏️', wall: '🗱', floor: '🗨',
-    };
-    return map[type] ?? '📦';
-  }
-
-  private defaultSizeFor(type: CanvasItem['type']): { w: number; h: number } {
+  private defaultSizeFor(categoryId: number): { w: number; h: number } {
+    const cat = this.categories.find(c => c.cetegoryId === categoryId);
+    const name = cat?.categoryName.toLowerCase() || '';
+    
     const map: Record<string, { w: number; h: number }> = {
-      sofa:     { w: 180, h: 90  }, chair:    { w: 80,  h: 80  },
-      table:    { w: 120, h: 80  }, rug:      { w: 200, h: 140 },
-      wardrobe: { w: 100, h: 160 }, desk:     { w: 120, h: 60  },
-      bed:      { w: 160, h: 200 }, wall:     { w: 800, h: 20  },
-      floor:    { w: 800, h: 600 },
+      'floors':                { w: 800, h: 600 },
+      'walls':                 { w: 800, h: 20  },
+      'windows':               { w: 100, h: 120 },
+      'sofas & armchairs':     { w: 180, h: 90  },
+      'pictures':              { w: 80,  h: 80  },
+      'flower pots':           { w: 60,  h: 60  },
+      'curtains':              { w: 100, h: 150 },
+      'lamps':                 { w: 50,  h: 80  },
+      'tables':                { w: 120, h: 80  },
+      'clocks':                { w: 60,  h: 60  },
+      'carpets':               { w: 200, h: 140 },
     };
-    return map[type] ?? { w: 100, h: 100 };
+    return map[name] ?? { w: 100, h: 100 };
+  }
+
+  getZIndex(type: string): number {
+    const n = type.toLowerCase();
+    
+    if (n === 'floors') return 1;
+    if (n === 'walls') return 2;
+    if (n === 'carpets') return 10;
+    if (n === 'clocks' || n === 'windows' || n === 'pictures') return 20;
+    if (n === 'curtains') return 30;
+    if (n === 'flower pots' || n === 'sofas & armchairs' || n === 'tables' || n === 'lamps') return 40;
+    
+    return 50;
+  }
+
+  shouldHaveShadow(type: string): boolean {
+    const shadowTypes = ['sofas & armchairs', 'flower pots', 'tables', 'lamps'];
+    return shadowTypes.some(t => type.toLowerCase().includes(t.toLowerCase()));
+  }
+
+  getItemCategoryId(item: CanvasItem): number {
+    if (!item.productId) return 0;
+    const product = this.allProducts.find(p => p.productId === item.productId);
+    return product?.categoryId || 0;
+  }
+
+
+  CleanimageUrl(url?: string): string {
+    if (!url) return '';
+  
+  // 1. החלפת לוכסנים הפוכים (\) בלוכסנים ישרים (/)
+  // 2. ניקוי תווים לבנים ותווי בקרה נסתרים
+  const cleanedUrl = url
+    .replace(/\\/g, '/')                      // הופך \ ל- /
+    .replace(/[\n\r\t\0\x0B\f]/g, '')         // מנקה תווים מיוחדים כולל \f
+    .trim();
+  
+  return cleanedUrl.startsWith('http') 
+    ? cleanedUrl 
+    : `http://localhost:4200/${cleanedUrl}`;
   }
 }
+
+
+  

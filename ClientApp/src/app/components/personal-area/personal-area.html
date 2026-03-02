@@ -11,11 +11,11 @@
       </button>
       <div class="h-6 w-px bg-[#d7ccc8]"></div>
       <span class="text-lg font-bold text-[#4e342e] flex items-center gap-2">
-        <span>🏛️</span> אזור אישי
+        <img src="/images/icons/living_room.png" class="w-5 h-5"> אזור אישי
       </span>
     </div>
     <span class="text-sm font-medium text-[#8d6e63] flex items-center gap-2">
-      <span class="text-lg">👤</span> 
+      <img src="/images/icons/person.png" class="w-5 h-5"> 
       {{ currentUser?.firstName }} {{ currentUser?.lastName }}
       <span *ngIf="isAdmin" class="ml-2 text-xs bg-[#efebe9] text-[#5d4037] border border-[#d7ccc8] px-2 py-0.5 rounded-full font-bold">מנהל</span>
     </span>
@@ -32,10 +32,10 @@
       <!-- Header -->
       <div class="px-6 py-4 border-b border-[#d7ccc8]/50 flex items-center justify-between shrink-0">
         <h2 class="text-md font-bold text-[#4e342e] tracking-wide flex items-center gap-2">
-          <span>📋</span> {{ isAdmin ? 'כל ההזמנות' : 'הזמנות קודמות' }}
+          <img src="/images/icons/list.png" class="w-5 h-5"> {{ isAdmin ? 'כל ההזמנות' : 'הזמנות קודמות' }}
         </h2>
-        <button (click)="loadOrders()" class="text-xs font-bold text-[#8d6e63] hover:text-[#5d4037] bg-[#efebe9] hover:bg-[#d7ccc8] px-3 py-1.5 rounded-lg transition border border-[#d7ccc8]/50">
-          🔄 רענן
+        <button (click)="loadOrders()" class="text-xs font-bold text-[#8d6e63] hover:text-[#5d4037] bg-[#efebe9] hover:bg-[#d7ccc8] px-3 py-1.5 rounded-lg transition border border-[#d7ccc8]/50 flex items-center gap-1.5">
+          <img src="/images/icons/refresh.png" class="w-3 h-3"> רענן
         </button>
       </div>
 
@@ -53,7 +53,7 @@
       <!-- Empty state -->
       <div *ngIf="!isLoadingOrders && !ordersError && pastOrders.length === 0"
         class="flex-1 flex flex-col items-center justify-center text-[#a1887f] select-none">
-        <span class="text-5xl mb-3 opacity-50">📭</span>
+        <img src="/images/icons/draft_orders.png" class="w-12 h-12 opacity-50">
         <p class="text-sm">אין הזמנות להצגה</p>
       </div>
 
@@ -65,7 +65,7 @@
           class="bg-white/60 hover:bg-white/80 transition rounded-xl border border-[#d7ccc8] shadow-sm p-5 relative group">
           
           <div class="absolute top-4 left-4 opacity-10 group-hover:opacity-20 transition">
-             <span class="text-6xl">📦</span>
+             <img src="/images/icons/shopping_basket.png" class="w-12 h-12">
           </div>
 
           <!-- Order header -->
@@ -126,7 +126,7 @@
     <div class="w-80 shrink-0 bg-[#fffdf5]/80 backdrop-blur border border-[#d7ccc8] rounded-2xl shadow-sm flex flex-col overflow-hidden">
       <div class="px-6 py-4 border-b border-[#d7ccc8]/50 shrink-0">
         <h2 class="text-md font-bold text-[#4e342e] tracking-wide flex items-center gap-2">
-            <span>🛒</span> סל נוכחי
+            <img src="/images/icons/shopping_cart.png" class="w-4 h-4"> סל נוכחי
         </h2>
         <p class="text-xs text-[#8d6e63] mt-0.5">{{ cartItems.length }} פריטים</p>
       </div>
@@ -134,7 +134,7 @@
       <!-- Empty cart -->
       <div *ngIf="cartItems.length === 0"
         class="flex-1 flex flex-col items-center justify-center text-[#a1887f] select-none">
-        <span class="text-4xl mb-2 opacity-50">🛍️</span>
+        <img src="/images/icons/shopping_basket.png" class="w-8 h-8 opacity-50">
         <p class="text-sm">הסל ריק</p>
         <button (click)="backToDesign()"
           class="mt-3 text-xs text-[#5d4037] hover:text-[#4e342e] font-bold underline transition">
@@ -147,10 +147,9 @@
         <div *ngFor="let item of cartItems"
           class="flex items-center justify-between bg-white/60 rounded-xl px-3 py-2 border border-[#d7ccc8] hover:bg-white/80 transition">
           <div class="flex items-center gap-3 min-w-0">
-            <!-- Product image or fallback emoji -->
+            <!-- Product image -->
             <img *ngIf="item.imageURL" [src]="getImageUrl(item.imageURL)" [alt]="item.label"
               class="w-10 h-10 object-cover rounded-lg border border-[#d7ccc8] shrink-0">
-            <span *ngIf="!item.imageURL" class="text-2xl shrink-0">{{ item.emoji }}</span>
             
             <span class="text-sm font-bold text-[#5d4037] truncate">{{ item.label }}</span>
           </div>
@@ -173,13 +172,13 @@
         <!-- Success message -->
         <div *ngIf="submitSuccess"
           class="text-center text-xs text-green-800 font-bold py-2 bg-green-50 border border-green-200 rounded-xl">
-          ✅ ההזמנה נסגרה בהצלחה!
+          <img src="/images/icons/order_approve.png" class="w-4 h-4 inline-block mr-1"> ההזמנה נסגרה בהצלחה!
         </div>
 
         <!-- Error message -->
         <div *ngIf="submitError"
           class="text-center text-xs text-red-800 font-bold py-2 bg-red-50 border border-red-200 rounded-xl">
-          ⚠️ {{ submitError }}
+          <img src="/images/icons/error.png" class="w-4 h-4 inline-block mr-1"> {{ submitError }}
         </div>
 
         <!-- Submit button -->
@@ -192,7 +191,7 @@
           [class.bg-[#efebe9]]="!canSubmit"
           [class.text-[#a1887f]]="!canSubmit"
           [class.cursor-not-allowed]="!canSubmit">
-          <span *ngIf="!isSubmitting">✅ סגור הזמנה</span>
+          <span *ngIf="!isSubmitting"><img src="/images/icons/check.png" class="w-4 h-4 inline-block mr-1"> סגור הזמנה</span>
           <span *ngIf="isSubmitting" class="animate-pulse">שולח...</span>
         </button>
       </div>

@@ -4,15 +4,35 @@
 // -------------------------------------------------------------------
 export interface CanvasItem {
   id: string;
-  type: 'sofa' | 'chair' | 'table' | 'rug' | 'wardrobe' | 'desk' | 'bed' | 'wall' | 'floor';
+  type: string;
   x: number;       // px from left of canvas
   y: number;       // px from top of canvas
   width: number;   // px
   height: number;  // px
   label: string;
-  emoji: string;
   productId?: number;
   price?: number;
   color?: string;
   imageURL?: string;
+}
+
+// -------------------------------------------------------------------
+// ResizeSession - tracks active resize operation
+// -------------------------------------------------------------------
+export interface ResizeSession {
+  itemId: string;
+  startMouseX: number;
+  startMouseY: number;
+  startWidth: number;
+  startHeight: number;
+}
+
+// -------------------------------------------------------------------
+// StaticEntry - wall / floor palette entry (not from API)
+// -------------------------------------------------------------------
+export interface StaticEntry {
+  type: CanvasItem['type'];
+  label: string;
+  defaultWidth: number;
+  defaultHeight: number;
 }

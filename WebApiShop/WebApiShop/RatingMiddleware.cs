@@ -6,6 +6,7 @@ namespace WebApiShop
 public class RatingMiddleware
 {
     private readonly RequestDelegate _next;
+    
 
     public RatingMiddleware(RequestDelegate next)
     {

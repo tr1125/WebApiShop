@@ -29,16 +29,19 @@ namespace Repositories
             && (maxPrice == null || product.Price <= maxPrice)
             && (categoryIds.Length == 0 || categoryIds.Contains(product.CategoryId))
             && (color == null || product.Color == color))
-            
             .OrderBy(product => product.Price);
-            //var res = _webApiShopContext.Products;
-            //return await _webApiShopContext.Products.ToListAsync();
+
             List<Product> products = await query.Skip((position -1)*skip)
                 .Take(skip)
                 .Include(product=>product.Category).ToListAsync();
             int total = await query.CountAsync();
             return (products, total);
 
+        }
+
+        public async Task<Product?> GetProductById(int id)
+        {
+            return await _webApiShopContext.Products.FirstOrDefaultAsync(p => p.ProductId == id && !p.IsDeleted);
         }
 
         public async Task<Product> AddProduct(Product product)

@@ -29,8 +29,9 @@ namespace WebApiShop.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDTO>> GetProductById(int id)
         {
-            // TODO: Implement GetProductById in service
-            return NotFound("Single product endpoint not implemented yet");
+            ProductDTO? product = await _service.GetProductById(id);
+            if (product == null) return NotFound();
+            return Ok(product);
         }
 
         // Admin only
@@ -45,9 +46,6 @@ namespace WebApiShop.Controllers
                 if (string.IsNullOrEmpty(product.ProductName))
                     return BadRequest("ProductName is required");
                 
-                // Allow 0 price
-                // if (product.Price <= 0)
-                //    return BadRequest("Price must be greater than 0");
                 
                 ProductDTO product2 = await _service.AddProduct(product);
                 if (product2 == null) return BadRequest();
@@ -74,10 +72,6 @@ namespace WebApiShop.Controllers
                 if (string.IsNullOrEmpty(product.ProductName))
                     return BadRequest("ProductName is required");
                 
-                // Allow 0 price
-                // if (product.Price <= 0)
-                //    return BadRequest("Price must be greater than 0");
-                
                 ProductDTO updated = await _service.UpdateProduct(id, product);
                 if (updated == null) return NotFound();
                 return Ok(updated);
@@ -94,6 +88,7 @@ namespace WebApiShop.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
+
             // TODO: Add authorization check for Admin
             bool deleted = await _service.DeleteProduct(id);
             if (!deleted) return NotFound();

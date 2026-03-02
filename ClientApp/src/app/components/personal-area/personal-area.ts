@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, timeout, finalize } from 'rxjs';
 
 import { AuthService } from '../../services/auth';
 import { DesignRoomStateService } from '../../services/design-room-state';
@@ -44,11 +44,14 @@ export class PersonalAreaComponent implements OnInit, OnDestroy {
     private orderService: OrderService,
     private productService: ProductService,
     public  router: Router,
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   // ── Lifecycle ──────────────────────────────────────────────────
 
   ngOnInit(): void {
+    console.log('PersonalAreaComponent ngOnInit called');
     // Redirect guests to auth
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/auth']);
@@ -144,8 +147,12 @@ export class PersonalAreaComponent implements OnInit, OnDestroy {
 
   loadOrders(): void {
     const user = this.currentUser;
-    if (!user) return;
+    if (!user) {
+      console.log('No user found');
+      return;
+    }
 
+    console.log('Loading orders for user:', user.userId, 'isAdmin:', this.isAdmin);
     this.isLoadingOrders = true;
     this.ordersError     = null;
 
@@ -153,21 +160,33 @@ export class PersonalAreaComponent implements OnInit, OnDestroy {
       ? this.orderService.getAllOrders()
       : this.orderService.getOrdersByUser(user.userId);
 
-    obs.subscribe({
-      next: orders => {
-        this.pastOrders      = orders;
-        this.isLoadingOrders = false;
-        // Pre-fill pending status selects with current status
-        for (const o of orders) {
-          this.pendingStatus[o.orderId] = o.status;
-        }
-      },
-      error: err => {
-        this.ordersError     = 'שגיאה בטעינת ההזמנות.';
-        this.isLoadingOrders = false;
-        console.error(err);
-      },
-    });
+    console.log('Observable created, subscribing...');
+    this.subs.add(
+      obs.pipe(
+        timeout(10000),
+        finalize(() => {
+          this.ngZone.run(() => {
+            console.log('finalize called, setting isLoadingOrders to false');
+            this.isLoadingOrders = false;
+            this.cdr.markForCheck();
+          });
+        })
+      ).subscribe({
+        next: orders => {
+          console.log('Orders received:', orders);
+          this.pastOrders = orders;
+          for (const o of orders) {
+            this.pendingStatus[o.orderId] = o.status;
+          }
+          this.cdr.markForCheck();
+        },
+        error: err => {
+          console.error('Error loading orders:', err);
+          this.ordersError = 'שגיאה בטעינת ההזמנות.';
+          this.cdr.markForCheck();
+        },
+      })
+    );
   }
 
   updateStatus(order: OrderDTO): void {

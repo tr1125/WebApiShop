@@ -75,14 +75,15 @@ export class AuthService {
   }
 
   // עדכון פרטי משתמש - שולח PUT /api/Users/{id}
-  updateUser(id: number, userData: Partial<User> & { password: string }): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/Users/${id}`, userData)
+  updateUser(id: number, userData: Partial<User> & { password: string }): Observable<User> {
+    console.log('updateUser called with id:', id, 'userData:', userData);
+    return this.http.put<User>(`${this.apiUrl}/Users/${id}`, userData)
       .pipe(
-        tap(() => {
+        tap((updatedUser) => {
+          console.log('updateUser response:', updatedUser);
           // עדכון localStorage אחרי הצלחה
-          const updated = { ...this.currentUserSubject.value, ...userData };
-          localStorage.setItem('currentUser', JSON.stringify(updated));
-          this.currentUserSubject.next(updated as User);
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          this.currentUserSubject.next(updatedUser);
         }),
         catchError(error => {
           console.error('Update error:', error);
@@ -137,4 +138,3 @@ export class AuthService {
   }
 
 }
-

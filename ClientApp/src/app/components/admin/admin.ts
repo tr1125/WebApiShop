@@ -29,6 +29,12 @@ export class AdminComponent implements OnInit {
   orderStatuses = ORDER_STATUSES;
   pendingStatus: Record<number, string> = {};
   
+  // pagination
+  currentPage = 1;
+  readonly PAGE_SIZE = 10;
+  totalProducts = 0;
+  hasMorePages = true;
+  
   // מצבים
   isLoading = false;
   isProductsLoading = false;
@@ -103,12 +109,10 @@ export class AdminComponent implements OnInit {
       this.isProductsLoading = true;
     }
     
-    // נגדיר פרמטרים לקבלת כל המוצרים (או כמות גדולה מספיק)
-    // ה-limit ממופה ל-skip ב-ProductService, וה-position הוא מס' עמוד
-    // אבל אנחנו רוצים להגדיל את כמות המוצרים בדף אחד
-    this.productService.getProducts({ limit: 10000 }).subscribe({
+    this.productService.getProducts({ position: this.currentPage, limit: this.PAGE_SIZE }).subscribe({
       next: (products) => {
         this.products = products;
+        this.hasMorePages = products.length === this.PAGE_SIZE;
         this.isProductsLoading = false;
         console.log('מוצרים נטענו (Admin):', products.length);
       },
@@ -118,6 +122,20 @@ export class AdminComponent implements OnInit {
         this.showMessage('שגיאה בטעינת מוצרים', 'error');
       }
     });
+  }
+  
+  nextPage() {
+    if (this.hasMorePages) {
+      this.currentPage++;
+      this.loadProducts();
+    }
+  }
+  
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadProducts();
+    }
   }
   
   // טעינת הזמנות
@@ -299,34 +317,10 @@ export class AdminComponent implements OnInit {
   private showMessage(message: string, type: 'success' | 'error') {
     alert(message);
   }
-  
-  // קבלת מספר מוצרים פעילים
-  getActiveProductsCount(): number {
-    return this.products.filter(p => !p.isDeleted).length;
-  }
-  
-  // חישוב ערך כללי של המוצרים
-  getTotalValue(): number {
-    return this.products.reduce((total, product) => total + product.price, 0);
-  }
-  
-  // יצירת ד"ח
-  generateReport() {
-    const report = {
-      totalProducts: this.products.length,
-      activeProducts: this.getActiveProductsCount(),
-      totalCategories: this.categories.length,
-      totalValue: this.getTotalValue(),
-      generatedAt: new Date()
-    };
-    
-    console.log('ד"ח מערכת:', report);
-    this.showMessage('ד"ח נוצר - ראה קונסול', 'success');
-  }
 
   // חזרה לדף הבית - לדף העיצוב (ולא לדף הראשי שזורק חזרה למנהל)
   backToHome() {
-    this.router.navigate(['/design']);
+    this.router.navigate(['/auth']);
   }
   
   // Track by functions לאופטימיזציה
