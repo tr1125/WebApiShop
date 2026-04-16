@@ -75,7 +75,7 @@
                 <span class="text-xs font-mono text-[#8d6e63] bg-[#efebe9] px-1.5 py-0.5 rounded border border-[#d7ccc8]">#{{ order.orderId }}</span>
                 <span class="text-xs text-[#8d6e63]">{{ order.orderDate }}</span>
               </div>
-              <p class="text-xl font-bold text-[#5d4037]">₪{{ order.orderSum?.toFixed(0) }}</p>
+              <p class="text-xl font-bold text-[#5d4037]">₪{{ order.orderSum.toFixed(0) }}</p>
             </div>
             
             <span class="text-xs px-3 py-1.5 rounded-full font-bold border"
@@ -86,7 +86,7 @@
 
           <!-- Order items -->
           <div class="bg-[#fcfbf9] rounded-lg p-3 border border-[#efebe9] mb-3 relative z-10">
-            <ul *ngIf="order.orderItems?.length" class="text-sm text-[#5d4037] space-y-1">
+            <ul *ngIf="order.orderItems.length" class="text-sm text-[#5d4037] space-y-1">
               <li *ngFor="let item of order.orderItems" class="flex justify-between items-center border-b border-dashed border-[#d7ccc8]/50 last:border-0 pb-1 last:pb-0">
                 <div class="flex items-center gap-2">
                   <span class="w-1.5 h-1.5 rounded-full bg-[#a1887f]"></span>
