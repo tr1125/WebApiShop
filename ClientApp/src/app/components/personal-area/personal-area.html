@@ -173,6 +173,7 @@
         <div *ngIf="submitSuccess"
           class="text-center text-xs text-green-800 font-bold py-2 bg-green-50 border border-green-200 rounded-xl">
           <img src="/images/icons/order_approve.png" class="w-4 h-4 inline-block mr-1"> ההזמנה נסגרה בהצלחה!
+          <span *ngIf="placedOrderId"> | מספר הזמנה: <strong>#{{ placedOrderId }}</strong></span>
         </div>
 
         <!-- Error message -->

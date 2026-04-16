@@ -25,6 +25,7 @@ export class PersonalAreaComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   submitError: string | null = null;
   submitSuccess = false;
+  placedOrderId: number | null = null;
 
   // ── Past orders (left panel) ──────────────────────────────────
   pastOrders: OrderDTO[] = [];
@@ -104,6 +105,7 @@ export class PersonalAreaComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
     this.submitError  = null;
     this.submitSuccess = false;
+    this.placedOrderId = null;
 
     // Group items by productId and sum quantities
     const grouped = new Map<number, number>();
@@ -129,9 +131,10 @@ export class PersonalAreaComponent implements OnInit, OnDestroy {
     };
 
     this.orderService.addOrder(orderPayload).subscribe({
-      next: () => {
+      next: (createdOrder) => {
         this.isSubmitting   = false;
         this.submitSuccess  = true;
+        this.placedOrderId  = createdOrder?.orderId ?? null;
         this.stateService.clearCanvas();
         this.loadOrders();
       },
