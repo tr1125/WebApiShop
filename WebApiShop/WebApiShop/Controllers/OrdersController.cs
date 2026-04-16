@@ -11,9 +11,11 @@ namespace WebApiShop.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IOrderService _service;
-        public OrdersController(IOrderService service)
+        private readonly ILogger<OrdersController> _logger;
+        public OrdersController(IOrderService service, ILogger<OrdersController> logger)
         {
             _service = service;
+            _logger = logger;
         }
 
         [HttpGet("{id}")]
@@ -21,13 +23,18 @@ namespace WebApiShop.Controllers
         {
             try
             {
+                _logger.LogInformation("GetOrderById called with id={Id}", id);
                 OrderDTO order = await _service.GetOrderById(id);
-                if (order == null) return NotFound();
+                if (order == null)
+                {
+                    _logger.LogWarning("Order not found for id={Id}", id);
+                    return NotFound();
+                }
                 return Ok(order);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in Get: {ex.Message}");
+                _logger.LogError(ex, "Error in GetOrderById for id={Id}", id);
                 return StatusCode(500, new { message = ex.Message });
             }
         }
@@ -38,14 +45,14 @@ namespace WebApiShop.Controllers
         {
             try
             {
-                // Note: In a real app we'd check claims/roles here.
-                // Assuming client-side security is backed by server logic eventually.
+                _logger.LogInformation("GetAllOrders called");
                 List<OrderDTO> orders = await _service.GetAllOrders();
+                _logger.LogInformation("GetAllOrders returned {Count} orders", orders.Count);
                 return Ok(orders);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in GetAll: {ex.Message}");
+                _logger.LogError(ex, "Error in GetAllOrders");
                 return StatusCode(500, new { message = ex.Message });
             }
         }
@@ -55,13 +62,14 @@ namespace WebApiShop.Controllers
         {
             try
             {
+                _logger.LogInformation("GetOrdersByUserId called for userId={UserId}", userId);
                 List<OrderDTO> orders = await _service.GetOrdersByUserId(userId);
+                _logger.LogInformation("GetOrdersByUserId returned {Count} orders for userId={UserId}", orders.Count, userId);
                 return Ok(orders);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in GetByUserId: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                _logger.LogError(ex, "Error in GetOrdersByUserId for userId={UserId}", userId);
                 return StatusCode(500, new { message = ex.Message, details = ex.StackTrace });
             }
         }
@@ -71,15 +79,16 @@ namespace WebApiShop.Controllers
         {
             try
             {
+                _logger.LogInformation("AddOrder called for userId={UserId}, orderSum={OrderSum}", order?.UserId, order?.OrderSum);
                 if (order == null) return BadRequest("Order cannot be null");
                 OrderDTO order2 = await _service.AddOrder(order);
                 if (order2 == null) return BadRequest("Failed to create order");
+                _logger.LogInformation("Order created successfully with orderId={OrderId}", order2.OrderId);
                 return CreatedAtAction(nameof(Get), new { id = order2.OrderId }, order2);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in Post: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                _logger.LogError(ex, "Error in AddOrder for userId={UserId}", order?.UserId);
                 return StatusCode(500, new { message = ex.Message, details = ex.StackTrace });
             }
         }
@@ -89,13 +98,19 @@ namespace WebApiShop.Controllers
         {
             try
             {
+                _logger.LogInformation("UpdateOrderStatus called for orderId={Id}, status={Status}", id, request?.Status);
                 bool success = await _service.UpdateOrderStatus(id, request.Status);
-                if (!success) return NotFound();
+                if (!success)
+                {
+                    _logger.LogWarning("Order not found for status update, orderId={Id}", id);
+                    return NotFound();
+                }
+                _logger.LogInformation("Order status updated successfully for orderId={Id}", id);
                 return Ok();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in UpdateStatus: {ex.Message}");
+                _logger.LogError(ex, "Error in UpdateOrderStatus for orderId={Id}", id);
                 return StatusCode(500, new { message = ex.Message });
             }
         }

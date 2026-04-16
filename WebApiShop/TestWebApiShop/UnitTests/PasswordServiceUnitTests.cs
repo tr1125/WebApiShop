@@ -1,6 +1,7 @@
 using Xunit;
 using Services;
 using Entities;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace TestWebApiShop.UnitTests
 {
@@ -10,7 +11,7 @@ namespace TestWebApiShop.UnitTests
 
         public PasswordServiceUnitTests()
         {
-            _passwordService = new PasswordService();
+            _passwordService = new PasswordService(NullLogger<PasswordService>.Instance);
         }
 
         #region PasswordHardness Tests

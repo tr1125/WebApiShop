@@ -21,5 +21,12 @@ namespace Repositories
         {
             return await _webApiShopContext.Categories.ToListAsync();
         }
+
+        public async Task<Category> AddCategory(Category category)
+        {
+            await _webApiShopContext.Categories.AddAsync(category);
+            await _webApiShopContext.SaveChangesAsync();
+            return category;
+        }
     }
 }

@@ -41,7 +41,7 @@ namespace TestWebApiShop.IntegrationTests
             await _dbContext.SaveChangesAsync();
 
             // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, null, null, null, null, new int?[] { });
+            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, null, null, null, null, new int?[] { }, null);
 
             // Assert
             Assert.Equal(3, items.Count);
@@ -67,7 +67,7 @@ namespace TestWebApiShop.IntegrationTests
             await _dbContext.SaveChangesAsync();
 
             // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, 50, null, null, null, new int?[] { });
+            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, 50, null, null, null, new int?[] { }, null);
 
             // Assert
             Assert.Contains(items, p => p.ProductName == "Expensive");
@@ -93,7 +93,7 @@ namespace TestWebApiShop.IntegrationTests
             await _dbContext.SaveChangesAsync();
 
             // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, null, 50, null, null, new int?[] { });
+            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, null, 50, null, null, new int?[] { }, null);
 
             // Assert
             Assert.DoesNotContain(items, p => p.ProductName == "Expensive");
@@ -119,7 +119,7 @@ namespace TestWebApiShop.IntegrationTests
             await _dbContext.SaveChangesAsync();
 
             // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, 10, 100, null, null, new int?[] { });
+            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, 10, 100, null, null, new int?[] { }, null);
 
             // Assert
             Assert.Single(items);
@@ -144,7 +144,7 @@ namespace TestWebApiShop.IntegrationTests
             await _dbContext.SaveChangesAsync();
 
             // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, null, null, "Apple", null, new int?[] { });
+            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, null, null, "Apple", null, new int?[] { }, null);
 
             // Assert
             Assert.Single(items);
@@ -169,7 +169,7 @@ namespace TestWebApiShop.IntegrationTests
             await _dbContext.SaveChangesAsync();
 
             // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, null, null, null, null, new int?[] { 2 });
+            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, null, null, null, null, new int?[] { 2 }, null);
 
             // Assert
             Assert.Single(items);
@@ -193,7 +193,7 @@ namespace TestWebApiShop.IntegrationTests
             await _dbContext.SaveChangesAsync();
 
             // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, 1000, 2000, null, null, new int?[] { });
+            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, 1000, 2000, null, null, new int?[] { }, null);
 
             // Assert
             Assert.Empty(items);

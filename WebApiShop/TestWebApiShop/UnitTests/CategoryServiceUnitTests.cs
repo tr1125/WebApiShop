@@ -5,6 +5,7 @@ using Services;
 using Repositories;
 using Entities;
 using DTOs;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace TestWebApiShop.UnitTests
 {
@@ -19,14 +20,14 @@ namespace TestWebApiShop.UnitTests
             _mockCategoryRepository = new Mock<ICategoryRepository>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<Services.MyMapper>());
             _mapper = config.CreateMapper();
-            _categoryService = new CategoryService(_mockCategoryRepository.Object, _mapper);
+            _categoryService = new CategoryService(_mockCategoryRepository.Object, _mapper, NullLogger<CategoryService>.Instance);
         }
 
         #region GetAllCategories Tests
 
         /// <summary>
-        /// בדיקה: קבלת כל ההזמנים כשיש מספר דטגוריות
-        /// Path: HAPPY - צריך להחזיר רשימה של הדטגוריות
+        /// בדיקה: קבלת כל ההזמנות כשיש מספר קטגוריות
+        /// Path: HAPPY - צריך להחזיר רשימה של הקטגוריות
         /// </summary>
         [Fact]
         public async Task GetAllCategories_WithMultipleCategories_ReturnsList()
@@ -49,8 +50,8 @@ namespace TestWebApiShop.UnitTests
         }
 
         /// <summary>
-        /// בדיקה: קבלת כל ההזמנים כשיש דטגוריה אחת
-        /// Path: HAPPY - צריך להחזיר דטגוריה אחדת
+        /// בדיקה: קבלת כל ההזמנות כשיש קטגוריה אחת
+        /// Path: HAPPY - צריך להחזיר קטגוריה אחת
         /// </summary>
         [Fact]
         public async Task GetAllCategories_WithSingleCategory_ReturnsSingleItem()
@@ -71,7 +72,7 @@ namespace TestWebApiShop.UnitTests
         }
 
         /// <summary>
-        /// בדיקה: קבלת כל הדטגוריות כשאין דטגוריות
+        /// בדיקה: קבלת כל הקטגוריות כשאין קטגוריות
         /// Path: UNHAPPY - צריך להחזיר רשימה ריקה
         /// </summary>
         [Fact]
@@ -88,8 +89,8 @@ namespace TestWebApiShop.UnitTests
         }
 
         /// <summary>
-        /// בדיקה: איצו המשמעות שמעדשים Entity ל-DTO טובים
-        /// Path: HAPPY - צריך שכל אבט טיפוס יכול DTO נכון
+        /// בדיקה: המרת ישויות ל-DTOs
+        /// Path: HAPPY - צריך שכל ישות תמופה ל-DTO נכון
         /// </summary>
         [Fact]
         public async Task GetAllCategories_MapsEntitiesToDTOs()

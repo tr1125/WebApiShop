@@ -5,6 +5,7 @@ using Services;
 using Repositories;
 using Entities;
 using DTOs;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace TestWebApiShop.UnitTests
 {
@@ -22,7 +23,7 @@ namespace TestWebApiShop.UnitTests
 
             var config = new MapperConfiguration(cfg => cfg.AddProfile<Services.MyMapper>());
             _mapper = config.CreateMapper();
-            _userService = new UserService(_mockUserRepository.Object, _mockPasswordService.Object, _mapper);
+            _userService = new UserService(_mockUserRepository.Object, _mockPasswordService.Object, _mapper, NullLogger<UserService>.Instance);
         }
 
         #region GetUserById Tests
@@ -75,7 +76,7 @@ namespace TestWebApiShop.UnitTests
         public async Task AddUserToFile_WithStrongPassword_AddsUserSuccessfully()
         {
             // Arrange
-            var userDTO = new UserDTO(0, "jane@test.com", "Jane", "Doe", "StrongPass123!");
+            var userDTO = new UserDTO(0, "jane@test.com", "Jane", "Doe", "StrongPass123!", "", "");
             var user = new User { UserId = 1, UserName = "jane@test.com", FirstName = "Jane", LastName = "Doe", Password = "StrongPass123!" };
             _mockPasswordService.Setup(x => x.PasswordHardness("StrongPass123!")).Returns(new Password { Level = 4 });
             _mockUserRepository.Setup(x => x.AddUserToFile(It.IsAny<User>())).ReturnsAsync(user);
@@ -96,7 +97,7 @@ namespace TestWebApiShop.UnitTests
         public async Task AddUserToFile_WithWeakPassword_ReturnsNull()
         {
             // Arrange
-            var userDTO = new UserDTO(0, "bob@test.com", "Bob", "Smith", "weak");
+            var userDTO = new UserDTO(0, "bob@test.com", "Bob", "Smith", "weak", "", "");
             _mockPasswordService.Setup(x => x.PasswordHardness("weak")).Returns(new Password { Level = 0 });
 
             // Act
@@ -203,9 +204,11 @@ namespace TestWebApiShop.UnitTests
         public async Task UpdateUserDetails_WithStrongPassword_UpdatesSuccessfully()
         {
             // Arrange
-            var userDTO = new UserDTO(1, "updated@test.com", "Updated", "User", "NewPass123!");
+            var userDTO = new UserDTO(1, "updated@test.com", "Updated", "User", "NewPass123!", "", "");
+            var updatedUser = new User { UserId = 1, UserName = "updated@test.com", FirstName = "Updated", LastName = "User", Password = "NewPass123!" };
             _mockPasswordService.Setup(x => x.PasswordHardness("NewPass123!")).Returns(new Password { Level = 4 });
             _mockUserRepository.Setup(x => x.UpdateUserDetails(1, It.IsAny<User>())).Returns(Task.CompletedTask);
+            _mockUserRepository.Setup(x => x.GetUserById(1)).ReturnsAsync(updatedUser);
 
             // Act
             var result = await _userService.UpdateUserDetails(1, userDTO);
@@ -222,7 +225,7 @@ namespace TestWebApiShop.UnitTests
         public async Task UpdateUserDetails_WithWeakPassword_ReturnsNull()
         {
             // Arrange
-            var userDTO = new UserDTO(1, "updated@test.com", "Updated", "User", "weak");
+            var userDTO = new UserDTO(1, "updated@test.com", "Updated", "User", "weak", "", "");
             _mockPasswordService.Setup(x => x.PasswordHardness("weak")).Returns(new Password { Level = 0 });
 
             // Act

@@ -13,7 +13,11 @@ obj/
 ## Rider
 .idea/
 
+
+
 ## Logs / temp
+logs/
+*.log.*
 *.log
 *.tlog
 *.tmp

@@ -1,6 +1,7 @@
 using Xunit;
 using Moq;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Services;
 using Repositories;
 using Entities;
@@ -11,30 +12,38 @@ namespace TestWebApiShop.UnitTests
     public class OrderServiceUnitTests
     {
         private readonly Mock<IOrderRepository> _mockOrderRepository;
+        private readonly Mock<IProductRepository> _mockProductRepository;
+        private readonly Mock<ILogger<OrderService>> _mockLogger;
         private readonly IMapper _mapper;
         private readonly OrderService _orderService;
 
         public OrderServiceUnitTests()
         {
             _mockOrderRepository = new Mock<IOrderRepository>();
+            _mockProductRepository = new Mock<IProductRepository>();
+            _mockLogger = new Mock<ILogger<OrderService>>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<Services.MyMapper>());
             _mapper = config.CreateMapper();
-            _orderService = new OrderService(_mockOrderRepository.Object, _mapper);
+            _orderService = new OrderService(_mockOrderRepository.Object, _mapper, _mockProductRepository.Object, _mockLogger.Object);
         }
 
         #region AddOrder Tests
 
-        /// <summary>
-        /// בדיקה: הוספת הזמנה עם דמיון קביע ובטוח טובט
-        /// Path: HAPPY - צריך להוסיף את הזמנה בהצלחה
-        /// </summary>
         [Fact]
-        public async Task AddOrder_WithValidOrder_AddsOrderSuccessfully()
+        public async Task AddOrder_WithMatchingSum_AddsOrderSuccessfully()
         {
             // Arrange
             var dateOnly = DateOnly.FromDateTime(DateTime.Now);
-            var orderDTO = new OrderDTO(1, dateOnly, 100, new List<OrderItemDTO>());
-            var order = new Order { OrderId = 1, UserId = 1, OrderSum = 100, OrderDate = dateOnly };
+            var orderItems = new List<OrderItemDTO>
+            {
+                new OrderItemDTO(1, 2, "Test Product", 100)
+            };
+            var orderDTO = new OrderDTO(1, dateOnly, 200, orderItems, "Pending", 1);
+            
+            var product = new Product { ProductId = 1, Price = 100 };
+            _mockProductRepository.Setup(x => x.GetProductById(1)).ReturnsAsync(product);
+
+            var order = new Order { OrderId = 1, UserId = 1, OrderSum = 200, OrderDate = dateOnly };
             _mockOrderRepository.Setup(x => x.AddOrder(It.IsAny<Order>())).ReturnsAsync(order);
 
             // Act
@@ -42,20 +51,32 @@ namespace TestWebApiShop.UnitTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(100, result.OrderSum);
+            Assert.Equal(200, result.OrderSum);
+            _mockLogger.Verify(
+                x => x.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => true),
+                    It.IsAny<Exception>(),
+                    (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()),
+                Times.Never);
         }
 
-        /// <summary>
-        /// בדיקה: הוספת הזמנה עם ף זמנה גבוה (9999)
-        /// Path: HAPPY - צריך מהער שההטרטט גם עם רמים בהכה גבוה
-        /// </summary>
         [Fact]
-        public async Task AddOrder_WithHighOrderSum_AddsOrderSuccessfully()
+        public async Task AddOrder_WithDifferentSum_LogsWarningAndAddsWithCalculatedSum()
         {
             // Arrange
             var dateOnly = DateOnly.FromDateTime(DateTime.Now);
-            var orderDTO = new OrderDTO(1, dateOnly, 9999, new List<OrderItemDTO>());
-            var order = new Order { OrderId = 1, UserId = 1, OrderSum = 9999, OrderDate = dateOnly };
+            var orderItems = new List<OrderItemDTO>
+            {
+                new OrderItemDTO(1, 2, "Test Product", 100)
+            };
+            var orderDTO = new OrderDTO(1, dateOnly, 50, orderItems, "Pending", 1); // 50 instead of 200
+            
+            var product = new Product { ProductId = 1, Price = 100 };
+            _mockProductRepository.Setup(x => x.GetProductById(1)).ReturnsAsync(product);
+
+            var order = new Order { OrderId = 1, UserId = 1, OrderSum = 200, OrderDate = dateOnly };
             _mockOrderRepository.Setup(x => x.AddOrder(It.IsAny<Order>())).ReturnsAsync(order);
 
             // Act
@@ -63,28 +84,15 @@ namespace TestWebApiShop.UnitTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(9999, result.OrderSum);
-        }
-
-        /// <summary>
-        /// בדיקה: הוספת הזמנה עם טוח זה (0)
-        /// Path: UNHAPPY - צריך להטפל הזמנה אחרי עם אפסנות נרמוך
-        /// </summary>
-        [Fact]
-        public async Task AddOrder_WithZeroOrderSum_AddsOrderSuccessfully()
-        {
-            // Arrange
-            var dateOnly = DateOnly.FromDateTime(DateTime.Now);
-            var orderDTO = new OrderDTO(1, dateOnly, 0, new List<OrderItemDTO>());
-            var order = new Order { OrderId = 1, UserId = 1, OrderSum = 0, OrderDate = dateOnly };
-            _mockOrderRepository.Setup(x => x.AddOrder(It.IsAny<Order>())).ReturnsAsync(order);
-
-            // Act
-            var result = await _orderService.AddOrder(orderDTO);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(0, result.OrderSum);
+            Assert.Equal(200, result.OrderSum); // Returns the result mapped from DB
+            _mockLogger.Verify(
+                x => x.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => true),
+                    It.IsAny<Exception>(),
+                    (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()),
+                Times.Once);
         }
 
         #endregion

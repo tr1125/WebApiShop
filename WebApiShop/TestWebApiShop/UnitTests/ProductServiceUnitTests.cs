@@ -5,6 +5,7 @@ using Services;
 using Repositories;
 using Entities;
 using DTOs;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace TestWebApiShop.UnitTests
 {
@@ -19,7 +20,7 @@ namespace TestWebApiShop.UnitTests
             _mockProductRepository = new Mock<IProductRepository>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<Services.MyMapper>());
             _mapper = config.CreateMapper();
-            _productService = new ProductService(_mockProductRepository.Object, _mapper);
+            _productService = new ProductService(_mockProductRepository.Object, _mapper, NullLogger<ProductService>.Instance);
         }
 
         #region GetProductsByConditions Tests
@@ -39,11 +40,11 @@ namespace TestWebApiShop.UnitTests
             };
             _mockProductRepository.Setup(x => x.GetProductsByConditions(
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<double?>(), It.IsAny<double?>(),
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int?[]>()
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int?[]>(), It.IsAny<string?>()
             )).ReturnsAsync((products, 2));
 
             // Act
-            var (items, total) = await _productService.GetProductsByConditions(0, 10, null, null, null, null, null);
+            var (items, total) = await _productService.GetProductsByConditions(0, 10, null, null, null, null, null, null);
 
             // Assert
             Assert.Equal(2, items.Count);
@@ -62,11 +63,11 @@ namespace TestWebApiShop.UnitTests
             {
                 new Product { ProductId = 1, ProductName = "Expensive", Price = 100, CategoryId = 1, Description = "High Price" }
             };
-            _mockProductRepository.Setup(x => x.GetProductsByConditions(0, 10, 50, 150, null, null, null))
+            _mockProductRepository.Setup(x => x.GetProductsByConditions(0, 10, 50, 150, null, null, null, null))
                 .ReturnsAsync((products, 1));
 
             // Act
-            var (items, total) = await _productService.GetProductsByConditions(0, 10, 50, 150, null, null, null);
+            var (items, total) = await _productService.GetProductsByConditions(0, 10, 50, 150, null, null, null, null);
 
             // Assert
             Assert.Single(items);
@@ -85,11 +86,11 @@ namespace TestWebApiShop.UnitTests
             {
                 new Product { ProductId = 1, ProductName = "Apple", Price = 10, CategoryId = 1, Description = "Fruit" }
             };
-            _mockProductRepository.Setup(x => x.GetProductsByConditions(0, 10, null, null, "Apple", null, null))
+            _mockProductRepository.Setup(x => x.GetProductsByConditions(0, 10, null, null, "Apple", null, null, null))
                 .ReturnsAsync((products, 1));
 
             // Act
-            var (items, total) = await _productService.GetProductsByConditions(0, 10, null, null, "Apple", null, null);
+            var (items, total) = await _productService.GetProductsByConditions(0, 10, null, null, "Apple", null, null, null);
 
             // Assert
             Assert.Single(items);
@@ -109,11 +110,11 @@ namespace TestWebApiShop.UnitTests
                 new Product { ProductId = 1, ProductName = "Orange", Price = 8, CategoryId = 2, Description = "Citrus" }
             };
             var categoryIds = new int?[] { 2 };
-            _mockProductRepository.Setup(x => x.GetProductsByConditions(0, 10, null, null, null, null, categoryIds))
+            _mockProductRepository.Setup(x => x.GetProductsByConditions(0, 10, null, null, null, null, categoryIds, null))
                 .ReturnsAsync((products, 1));
 
             // Act
-            var (items, total) = await _productService.GetProductsByConditions(0, 10, null, null, null, null, categoryIds);
+            var (items, total) = await _productService.GetProductsByConditions(0, 10, null, null, null, null, categoryIds, null);
 
             // Assert
             Assert.Single(items);
@@ -130,11 +131,11 @@ namespace TestWebApiShop.UnitTests
             // Arrange
             _mockProductRepository.Setup(x => x.GetProductsByConditions(
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<double?>(), It.IsAny<double?>(),
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int?[]>()
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int?[]>(), It.IsAny<string?>()
             )).ReturnsAsync((new List<Product>(), 0));
 
             // Act
-            var (items, total) = await _productService.GetProductsByConditions(0, 10, 1000, 2000, null, null, null);
+            var (items, total) = await _productService.GetProductsByConditions(0, 10, 1000, 2000, null, null, null, null);
 
             // Assert
             Assert.Empty(items);
@@ -153,11 +154,11 @@ namespace TestWebApiShop.UnitTests
             {
                 new Product { ProductId = 11, ProductName = "Product11", Price = 50, CategoryId = 1, Description = "Page2" }
             };
-            _mockProductRepository.Setup(x => x.GetProductsByConditions(10, 10, null, null, null, null, null))
+            _mockProductRepository.Setup(x => x.GetProductsByConditions(10, 10, null, null, null, null, null, null))
                 .ReturnsAsync((products, 100));
 
             // Act
-            var (items, total) = await _productService.GetProductsByConditions(10, 10, null, null, null, null, null);
+            var (items, total) = await _productService.GetProductsByConditions(10, 10, null, null, null, null, null, null);
 
             // Assert
             Assert.Single(items);
