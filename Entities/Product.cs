@@ -21,6 +21,8 @@ public partial class Product
 
     public string Color { get; set; }
 
+    public bool IsDeleted { get; set; } = false;
+
 
     public virtual Category Category { get; set; }
 

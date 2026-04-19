@@ -1,0 +1,24 @@
+גש לקובץ test example.PNG. יש שם דוגמא כיצד אמורים הטסטים להיראות. כעת אני מעוניין בunit tests & integration tests עבור הפרויקט שלי, הכוללים happy &unhappy path. קבצי הפרויקט מצורפים.
+(הנה מה שכתוב בתמונה:
+public class UserRepositoryUnitTesting
+{
+[Fact]
+public async Task GetUser_ValidCredentials_ReturnsUser()
+{
+// Arrange
+var user = new User { FirstName= "Miriam", Email = "test@example.com", Password = "password" };
+
+var mockContext = new Mock<MyShopContext>();
+var users = new List<User>() {user };
+mockContext. Setup(x => x.Users).ReturnsDbSet(users);
+
+var userRepository = new UserRepository(mockContext.Object);
+// Act
+var result = await userRepository.getUser(user.Email, user.Password);
+
+// Assert
+Assert.Equal(user, result); })
+--------
+עקוב אחר שמות ופרטי השדות במחלקות.
+בנוסף- שים לב לשימוש בDTO, במידה וצריך
+---------

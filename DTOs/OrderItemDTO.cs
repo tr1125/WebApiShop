@@ -8,7 +8,9 @@ namespace DTOs
 {
     public record OrderItemDTO
     (
-        int ProductId, 
-        int Quantity
+        int ProductId = 0,
+        int? Quantity = null,
+        string? ProductName = null,
+        double? Price = null
     );
 }

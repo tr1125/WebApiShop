@@ -11,15 +11,28 @@ namespace WebApiShop.Controllers
     public class CategoriesController : ControllerBase
     {
         private readonly ICategoryService _service;
-        public CategoriesController(ICategoryService service)
+        private readonly ILogger<CategoriesController> _logger;
+        public CategoriesController(ICategoryService service, ILogger<CategoriesController> logger)
         {
             _service = service;
+            _logger = logger;
         }
 
         [HttpGet]
-        public async Task<List<CategoryDTO>> Get()
-        { 
-            return await _service.GetAllCategories();
+        public async Task<ActionResult<List<CategoryDTO>>> Get()
+        {
+            try
+            {
+                _logger.LogInformation("GetAllCategories called");
+                List<CategoryDTO> categories = await _service.GetAllCategories();
+                _logger.LogInformation("GetAllCategories returned {Count} categories", categories.Count);
+                return Ok(categories);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GetAllCategories");
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
     }

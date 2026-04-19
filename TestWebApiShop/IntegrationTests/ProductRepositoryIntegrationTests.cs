@@ -1,4 +1,4 @@
-using Xunit;
+﻿using Xunit;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using Entities;
@@ -21,183 +21,247 @@ namespace TestWebApiShop.IntegrationTests
 
         private void CleanUp() => _dbContext?.Dispose();
 
-        #region GetProductsByConditions Tests
+        private Category CreateTestCategory(int id = 1) =>
+            new Category { CetegoryId = id, CategoryName = $"Category{id}" };
+
+        private Product CreateTestProduct(int id, string name, double price, int categoryId = 1) =>
+            new Product
+            {
+                ProductId   = id,
+                ProductName = name,
+                Price       = price,
+                CategoryId  = categoryId,
+                Description = $"Description for {name}",
+                ImageURL    = $"https://example.com/{name}.jpg",
+                Color       = "Red",
+                IsDeleted   = false
+            };
+
+        #region GetProductsByConditions - GetAll Tests
 
         /// <summary>
-        /// בדיקה: קבלת מוצרים מדטבש בד פטרט
-        /// Path: HAPPY - דטטבצים תיט פטרטט דט טלב כל המוטריים
+        /// בדיקה: קבלת כל המוצרים כשיש מוצרים ב-DB
+        /// Path: HAPPY - צריך להחזיר רשימת כל המוצרים
         /// </summary>
         [Fact]
-        public async Task GetProductsByConditions_WithNoFilters_ReturnsAllProducts()
+        public async Task GetProductsByConditions_WithProducts_ReturnsAll()
         {
             // Arrange
-            var products = new List<Product>
-            {
-                new Product { ProductId = 1, ProductName = "Apple", Price = 10, CategoryId = 1, Description = "Red Fruit" },
-                new Product { ProductId = 2, ProductName = "Banana", Price = 5, CategoryId = 1, Description = "Yellow Fruit" },
-                new Product { ProductId = 3, ProductName = "Orange", Price = 8, CategoryId = 1, Description = "Orange Fruit" }
-            };
-            await _dbContext.Products.AddRangeAsync(products);
+            await _dbContext.Categories.AddAsync(CreateTestCategory());
+            await _dbContext.Products.AddRangeAsync(
+                CreateTestProduct(1, "Cola",  10),
+                CreateTestProduct(2, "Water", 5)
+            );
             await _dbContext.SaveChangesAsync();
 
             // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, null, null, null, null, new int?[] { });
+            var (items, total) = await _productRepository.GetProductsByConditions(
+                position: 1, skip: int.MaxValue,
+                minPrice: null, maxPrice: null,
+                name: null, desc: null,
+                categoryIds: Array.Empty<int?>(), color: null);
 
             // Assert
-            Assert.Equal(3, items.Count);
-            Assert.Equal(3, totalCount);
+            Assert.NotNull(items);
+            Assert.Equal(2, items.Count);
+            Assert.Equal(2, total);
             CleanUp();
         }
 
         /// <summary>
-        /// בדיקה: קבלת מוטריים ע פילטר minPrice (לם אעל maxPrice)
-        /// Path: HAPPY - צרין גדול המוטריים ד שמט פטר minPrice
+        /// בדיקה: קבלת כל המוצרים כשאין מוצרים ב-DB
+        /// Path: UNHAPPY - צריך להחזיר רשימה ריקה
         /// </summary>
         [Fact]
-        public async Task GetProductsByConditions_WithMinPriceFilter_ReturnsFilteredProducts()
+        public async Task GetProductsByConditions_WithNoProducts_ReturnsEmpty()
         {
-            // Arrange
-            var products = new List<Product>
-            {
-                new Product { ProductId = 1, ProductName = "Cheap", Price = 2, CategoryId = 1, Description = "Budget" },
-                new Product { ProductId = 2, ProductName = "Expensive", Price = 100, CategoryId = 1, Description = "Premium" },
-                new Product { ProductId = 3, ProductName = "MidRange", Price = 50, CategoryId = 1, Description = "Medium" }
-            };
-            await _dbContext.Products.AddRangeAsync(products);
-            await _dbContext.SaveChangesAsync();
-
             // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, 50, null, null, null, new int?[] { });
+            var (items, total) = await _productRepository.GetProductsByConditions(
+                position: 1, skip: int.MaxValue,
+                minPrice: null, maxPrice: null,
+                name: null, desc: null,
+                categoryIds: Array.Empty<int?>(), color: null);
 
             // Assert
-            Assert.Contains(items, p => p.ProductName == "Expensive");
-            Assert.Contains(items, p => p.ProductName == "MidRange");
-            Assert.DoesNotContain(items, p => p.ProductName == "Cheap");
-            CleanUp();
-        }
-
-        /// <summary>
-        /// בדיקה: קבלת מוטריים ע פטר maxPrice (בלי אבט minPrice)
-        /// Path: HAPPY - צרין גדול המוטריים ע maxPrice זעט ומעלה
-        /// </summary>
-        [Fact]
-        public async Task GetProductsByConditions_WithMaxPriceFilter_ReturnsFilteredProducts()
-        {
-            // Arrange
-            var products = new List<Product>
-            {
-                new Product { ProductId = 1, ProductName = "Cheap", Price = 2, CategoryId = 1, Description = "Low Price" },
-                new Product { ProductId = 2, ProductName = "Expensive", Price = 100, CategoryId = 1, Description = "High Price" }
-            };
-            await _dbContext.Products.AddRangeAsync(products);
-            await _dbContext.SaveChangesAsync();
-
-            // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, null, 50, null, null, new int?[] { });
-
-            // Assert
-            Assert.DoesNotContain(items, p => p.ProductName == "Expensive");
-            Assert.Contains(items, p => p.ProductName == "Cheap");
-            CleanUp();
-        }
-
-        /// <summary>
-        /// בדיקה: קבלת מוטריים בטוח סדרות מטבמים (min-max)
-        /// Path: HAPPY - צרין גדול מוטר ד שבטוח המטבטטוים
-        /// </summary>
-        [Fact]
-        public async Task GetProductsByConditions_WithPriceRangeFilter_ReturnsFilteredProducts()
-        {
-            // Arrange
-            var products = new List<Product>
-            {
-                new Product { ProductId = 1, ProductName = "TooLow", Price = 2, CategoryId = 1, Description = "Cheap" },
-                new Product { ProductId = 2, ProductName = "InRange", Price = 50, CategoryId = 1, Description = "Perfect" },
-                new Product { ProductId = 3, ProductName = "TooHigh", Price = 200, CategoryId = 1, Description = "Expensive" }
-            };
-            await _dbContext.Products.AddRangeAsync(products);
-            await _dbContext.SaveChangesAsync();
-
-            // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, 10, 100, null, null, new int?[] { });
-
-            // Assert
-            Assert.Single(items);
-            Assert.Equal("InRange", items[0].ProductName);
-            CleanUp();
-        }
-
-        /// <summary>
-        /// בדיקה: קבלת מוטטים בשם דטחם (search)
-        /// Path: HAPPY - צרין גדול בסדר אחד
-        /// </summary>
-        [Fact]
-        public async Task GetProductsByConditions_WithNameFilter_ReturnsMatchingProduct()
-        {
-            // Arrange
-            var products = new List<Product>
-            {
-                new Product { ProductId = 1, ProductName = "Apple", Price = 10, CategoryId = 1, Description = "Fruit" },
-                new Product { ProductId = 2, ProductName = "Banana", Price = 5, CategoryId = 1, Description = "Fruit" }
-            };
-            await _dbContext.Products.AddRangeAsync(products);
-            await _dbContext.SaveChangesAsync();
-
-            // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, null, null, "Apple", null, new int?[] { });
-
-            // Assert
-            Assert.Single(items);
-            Assert.Equal("Apple", items[0].ProductName);
-            CleanUp();
-        }
-
-        /// <summary>
-        /// בדיקה: קבלת מוטטים ךטגוריין מסוימים (שן דרגה)
-        /// Path: HAPPY - צריף חזרת דטגוריה (שאר דפטר)
-        /// </summary>
-        [Fact]
-        public async Task GetProductsByConditions_WithCategoryFilter_ReturnsProductsByCategory()
-        {
-            // Arrange
-            var products = new List<Product>
-            {
-                new Product { ProductId = 1, ProductName = "Apple", Price = 10, CategoryId = 1, Description = "Fruit" },
-                new Product { ProductId = 2, ProductName = "Orange", Price = 8, CategoryId = 2, Description = "Citrus" }
-            };
-            await _dbContext.Products.AddRangeAsync(products);
-            await _dbContext.SaveChangesAsync();
-
-            // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, null, null, null, null, new int?[] { 2 });
-
-            // Assert
-            Assert.Single(items);
-            Assert.Equal("Orange", items[0].ProductName);
-            CleanUp();
-        }
-
-        /// <summary>
-        /// בדיקה: קבלת מוטריים בבקש קליט לאט בבדיקה כאשר דטראטטעט מרובה
-        /// Path: UNHAPPY - צריך מטא רשימה ריקה אלט בתוצאה
-        /// </summary>
-        [Fact]
-        public async Task GetProductsByConditions_WithNoResults_ReturnsEmptyList()
-        {
-            // Arrange
-            var products = new List<Product>
-            {
-                new Product { ProductId = 1, ProductName = "Cheap", Price = 2, CategoryId = 1, Description = "Budget" }
-            };
-            await _dbContext.Products.AddRangeAsync(products);
-            await _dbContext.SaveChangesAsync();
-
-            // Act
-            var (items, totalCount) = await _productRepository.GetProductsByConditions(1, 10, 1000, 2000, null, null, new int?[] { });
-
-            // Assert
+            Assert.NotNull(items);
             Assert.Empty(items);
-            Assert.Equal(0, totalCount);
+            Assert.Equal(0, total);
+            CleanUp();
+        }
+
+        #endregion
+
+        #region GetProductsByConditions - Category Filter Tests
+
+        /// <summary>
+        /// בדיקה: סינון מוצרים לפי קטגוריה קיימת
+        /// Path: HAPPY - צריך להחזיר רק מוצרים מהקטגוריה הנבחרת
+        /// </summary>
+        [Fact]
+        public async Task GetProductsByConditions_FilterByCategory_ReturnsFilteredList()
+        {
+            // Arrange
+            await _dbContext.Categories.AddRangeAsync(CreateTestCategory(1), CreateTestCategory(2));
+            await _dbContext.Products.AddRangeAsync(
+                CreateTestProduct(1, "Cola",  10, categoryId: 1),
+                CreateTestProduct(2, "Chips", 8,  categoryId: 2)
+            );
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var (items, total) = await _productRepository.GetProductsByConditions(
+                position: 1, skip: int.MaxValue,
+                minPrice: null, maxPrice: null,
+                name: null, desc: null,
+                categoryIds: new int?[] { 1 }, color: null);
+
+            // Assert
+            Assert.NotNull(items);
+            Assert.Single(items);
+            Assert.Equal("Cola", items[0].ProductName);
+            CleanUp();
+        }
+
+        /// <summary>
+        /// בדיקה: סינון מוצרים לפי קטגוריה שאינה קיימת
+        /// Path: UNHAPPY - צריך להחזיר רשימה ריקה
+        /// </summary>
+        [Fact]
+        public async Task GetProductsByConditions_FilterByNonExistingCategory_ReturnsEmpty()
+        {
+            // Arrange
+            await _dbContext.Categories.AddAsync(CreateTestCategory());
+            await _dbContext.Products.AddAsync(CreateTestProduct(1, "Cola", 10));
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var (items, total) = await _productRepository.GetProductsByConditions(
+                position: 1, skip: int.MaxValue,
+                minPrice: null, maxPrice: null,
+                name: null, desc: null,
+                categoryIds: new int?[] { 999 }, color: null);
+
+            // Assert
+            Assert.NotNull(items);
+            Assert.Empty(items);
+            CleanUp();
+        }
+
+        #endregion
+
+        #region GetProductsByConditions - Price Range Filter Tests
+
+        /// <summary>
+        /// בדיקה: סינון מוצרים לפי טווח מחירים תקין
+        /// Path: HAPPY - צריך להחזיר רק מוצרים בטווח
+        /// </summary>
+        [Fact]
+        public async Task GetProductsByConditions_FilterByPriceRange_ReturnsFilteredList()
+        {
+            // Arrange
+            await _dbContext.Categories.AddAsync(CreateTestCategory());
+            await _dbContext.Products.AddRangeAsync(
+                CreateTestProduct(1, "Cheap",     5),
+                CreateTestProduct(2, "Mid",       50),
+                CreateTestProduct(3, "Expensive", 200)
+            );
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var (items, total) = await _productRepository.GetProductsByConditions(
+                position: 1, skip: int.MaxValue,
+                minPrice: 10, maxPrice: 100,
+                name: null, desc: null,
+                categoryIds: Array.Empty<int?>(), color: null);
+
+            // Assert
+            Assert.NotNull(items);
+            Assert.Single(items);
+            Assert.Equal("Mid", items[0].ProductName);
+            CleanUp();
+        }
+
+        /// <summary>
+        /// בדיקה: סינון לפי טווח מחירים שאין בו מוצרים
+        /// Path: UNHAPPY - צריך להחזיר רשימה ריקה
+        /// </summary>
+        [Fact]
+        public async Task GetProductsByConditions_FilterByPriceRangeNoResults_ReturnsEmpty()
+        {
+            // Arrange
+            await _dbContext.Categories.AddAsync(CreateTestCategory());
+            await _dbContext.Products.AddAsync(CreateTestProduct(1, "Cheap", 5));
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var (items, total) = await _productRepository.GetProductsByConditions(
+                position: 1, skip: int.MaxValue,
+                minPrice: 100, maxPrice: 500,
+                name: null, desc: null,
+                categoryIds: Array.Empty<int?>(), color: null);
+
+            // Assert
+            Assert.NotNull(items);
+            Assert.Empty(items);
+            CleanUp();
+        }
+
+        #endregion
+
+        #region GetProductsByConditions - Name Filter Tests
+
+        /// <summary>
+        /// בדיקה: חיפוש מוצר לפי שם חלקי קיים
+        /// Path: HAPPY - צריך להחזיר מוצרים שמכילים את השם
+        /// </summary>
+        [Fact]
+        public async Task GetProductsByConditions_FilterByName_ReturnsMatchingProducts()
+        {
+            // Arrange
+            await _dbContext.Categories.AddAsync(CreateTestCategory());
+            await _dbContext.Products.AddRangeAsync(
+                CreateTestProduct(1, "Apple Juice", 12),
+                CreateTestProduct(2, "Apple Cider", 18),
+                CreateTestProduct(3, "Orange Juice", 10)
+            );
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var (items, total) = await _productRepository.GetProductsByConditions(
+                position: 1, skip: int.MaxValue,
+                minPrice: null, maxPrice: null,
+                name: "Apple", desc: null,
+                categoryIds: Array.Empty<int?>(), color: null);
+
+            // Assert
+            Assert.NotNull(items);
+            Assert.Equal(2, items.Count);
+            Assert.All(items, p => Assert.Contains("Apple", p.ProductName));
+            CleanUp();
+        }
+
+        /// <summary>
+        /// בדיקה: חיפוש מוצר לפי שם שלא קיים
+        /// Path: UNHAPPY - צריך להחזיר רשימה ריקה
+        /// </summary>
+        [Fact]
+        public async Task GetProductsByConditions_FilterByNonExistingName_ReturnsEmpty()
+        {
+            // Arrange
+            await _dbContext.Categories.AddAsync(CreateTestCategory());
+            await _dbContext.Products.AddAsync(CreateTestProduct(1, "Cola", 10));
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var (items, total) = await _productRepository.GetProductsByConditions(
+                position: 1, skip: int.MaxValue,
+                minPrice: null, maxPrice: null,
+                name: "XYZXYZ", desc: null,
+                categoryIds: Array.Empty<int?>(), color: null);
+
+            // Assert
+            Assert.NotNull(items);
+            Assert.Empty(items);
             CleanUp();
         }
 

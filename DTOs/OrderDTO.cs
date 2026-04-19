@@ -9,9 +9,10 @@ namespace DTOs
     public record OrderDTO
     (
         int OrderId,
-        DateOnly OrderDate, 
-        double OrderSum,
-        List<OrderItemDTO> OrderItems,
-        string Status
+        DateOnly? OrderDate = null,
+        double? OrderSum = null,
+        List<OrderItemDTO> OrderItems = null,
+        string Status = null,
+        int? UserId = null
     );
 }

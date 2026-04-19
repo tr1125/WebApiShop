@@ -1,0 +1,34 @@
+Web  Api Project Check List
+
+Site Flow:
+•	Create New User
+•	Login For Existing User
+•	Update Existing user details
+•	User  Validations (email Address, and one more)
+•	Check password strength
+•	Display all Products, at least 20. All product details should be meaningful.
+•	Display Categories
+•	Filter by Category, price and name
+•	Place order
+•	order Id was placed successfully
+
+
+Functionality:
+•	Swagger for all Rest calls. Clear unimplemented functions.
+•	DTO, No Json Ignore in project
+•	Logging, in File for Information and up
+•	Configuration for connection string
+•	Error Handling
+•	Rating for all calls
+•	Order sum validation – write to log in case of mismatch
+•	Https protocol
+•	Tests – at least 5 unit, 5 integration and two for check order sum(happy path, unhappy path)
+•	Readme.MD
+Be prepared to show in presentation:
+•	Run SQL Server Profiler
+•	Using of devTools, All parts.
+
+Git
+•	Repository is up to date in GitHub. 
+•	Repository history with push from both members.
+

@@ -10,7 +10,9 @@ const getNewUser = () => {
         userName: document.querySelector(".newUserName").value,
         firstName: document.querySelector(".newUserfName").value,
         lastName: document.querySelector(".newUserlName").value,
-        password: document.querySelector(".newPassword").value
+        password: document.querySelector(".newPassword").value,
+        phone: document.querySelector(".newUserPhone").value,
+        address: document.querySelector(".newUserAddress").value
     };
     return user;
 }

@@ -13,120 +13,96 @@ namespace TestWebApiShop.UnitTests
             _passwordService = new PasswordService();
         }
 
-        #region PasswordHardness Tests
+        #region CheckPasswordStrength Tests
 
         /// <summary>
-        /// בדיקה: בדיקט ניסט חזסטם לסיסמה חזקה
-        /// Path: HAPPY - צריך מטא Level גבוה (סל עדיפ)
+        /// בדיקה: סיסמה חזקה עם אותיות גדולות, מספרים ותווים מיוחדים
+        /// Path: HAPPY - צריך להחזיר Password עם Level גבוה
         /// </summary>
         [Fact]
-        public void PasswordHardness_WithStrongPassword_ReturnsHighLevel()
+        public void CheckPasswordStrength_WithStrongPassword_ReturnsHighLevel()
         {
             // Arrange
-            string password = "StrongPassword123!@#";
+            var password = "Secure1234!";
 
             // Act
             var result = _passwordService.PasswordHardness(password);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(password, result.Name);
             Assert.True(result.Level >= 3);
         }
 
         /// <summary>
-        /// בדיקה: בדיקט ניסט חזקט לסיסמה בטיחה
-        /// Path: HAPPY - צריך מטא Level בתחום 1-3
+        /// בדיקה: סיסמה קצרה מדי (פחות מ-8 תווים)
+        /// Path: UNHAPPY - צריך להחזיר Password עם Level נמוך
         /// </summary>
         [Fact]
-        public void PasswordHardness_WithMediumPassword_ReturnsMediumLevel()
+        public void CheckPasswordStrength_WithShortPassword_ReturnsLowLevel()
         {
             // Arrange
-            string password = "Medium123";
+            var password = "Ab1!";
 
             // Act
             var result = _passwordService.PasswordHardness(password);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(password, result.Name);
-            Assert.True(result.Level >= 1 && result.Level <= 3);
-        }
-
-        /// <summary>
-        /// בדיקה: בדיקט ניסט קל סיסמה חדשה
-        /// Path: UNHAPPY - צריך מטא Level נמוך < 3
-        /// </summary>
-        [Fact]
-        public void PasswordHardness_WithWeakPassword_ReturnsLowLevel()
-        {
-            // Arrange
-            string password = "weak";
-
-            // Act
-            var result = _passwordService.PasswordHardness(password);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(password, result.Name);
             Assert.True(result.Level < 3);
         }
 
         /// <summary>
-        /// בדיקה: בדיקט ניסט עדין בד אחדיל סיסמה
-        /// Path: UNHAPPY - צריכ מטא Level = 0
+        /// בדיקה: סיסמה ללא תווים מיוחדים
+        /// Path: UNHAPPY - צריך להחזיר Password עם Level נמוך
         /// </summary>
         [Fact]
-        public void PasswordHardness_WithVeryWeakPassword_ReturnsZeroLevel()
+        public void CheckPasswordStrength_WithNoSpecialChars_ReturnsLowLevel()
         {
             // Arrange
-            string password = "a";
+            var password = "Password123";
 
             // Act
             var result = _passwordService.PasswordHardness(password);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(password, result.Name);
-            Assert.Equal(0, result.Level);
+            Assert.True(result.Level < 3);
         }
 
         /// <summary>
-        /// בדיקה: בדיקט ניסט עם סיסמה ריקה (דריש)
-        /// Path: UNHAPPY - צריכ מטא Level = 0
+        /// בדיקה: סיסמה ללא מספרים
+        /// Path: UNHAPPY - צריך להחזיר Password עם Level נמוך
         /// </summary>
         [Fact]
-        public void PasswordHardness_WithEmptyPassword_ReturnsZeroLevel()
+        public void CheckPasswordStrength_WithNoNumbers_ReturnsLowLevel()
         {
             // Arrange
-            string password = "";
+            var password = "Password!@#";
 
             // Act
             var result = _passwordService.PasswordHardness(password);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(password, result.Name);
-            Assert.Equal(0, result.Level);
+            Assert.True(result.Level < 3);
         }
 
         /// <summary>
-        /// בדיקה: בדיקט ניסט עם זט ודטעה בסיסמה
-        /// Path: HAPPY - צריכ מטא Level גבוה (ג־3)
+        /// בדיקה: סיסמה ריקה
+        /// Path: UNHAPPY - צריך להחזיר Password עם Level הכי נמוך
         /// </summary>
         [Fact]
-        public void PasswordHardness_WithSpecialCharacters_ReturnsGoodLevel()
+        public void CheckPasswordStrength_WithEmptyPassword_ReturnsLowestLevel()
         {
             // Arrange
-            string password = "MyStr0ng!@#Password";
+            var password = "";
 
             // Act
             var result = _passwordService.PasswordHardness(password);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(password, result.Name);
-            Assert.True(result.Level >= 3);
+            Assert.Equal(0, result.Level);
         }
 
         #endregion

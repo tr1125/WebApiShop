@@ -9,6 +9,8 @@ const getDetails = () => {
         firstName: document.querySelector(".userfName").value || oldUser.firstName,
         lastName: document.querySelector(".userlName").value || oldUser.lastName,
         password: document.querySelector(".password").value || oldUser.password,
+        address: document.querySelector(".userAddress").value || oldUser.address,
+        phone: document.querySelector(".userPhone").value || oldUser.phone,
         userId: oldUser.userId
     }
     return updatedUser

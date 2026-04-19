@@ -1,90 +1,60 @@
-using Xunit;
+﻿using Xunit;
 using Moq;
 using AutoMapper;
 using Services;
 using Repositories;
 using Entities;
 using DTOs;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace TestWebApiShop.UnitTests
 {
     public class OrderServiceUnitTests
     {
-        private readonly Mock<IOrderRepository> _mockOrderRepository;
+        private readonly Mock<IOrderRepository>   _mockOrderRepository;
+        private readonly Mock<ILogger<OrderService>> _mockLogger;
         private readonly IMapper _mapper;
         private readonly OrderService _orderService;
 
         public OrderServiceUnitTests()
         {
             _mockOrderRepository = new Mock<IOrderRepository>();
+            _mockLogger          = new Mock<ILogger<OrderService>>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<Services.MyMapper>());
             _mapper = config.CreateMapper();
-            _orderService = new OrderService(_mockOrderRepository.Object, _mapper);
+            _orderService = new OrderService(
+                _mockOrderRepository.Object,
+                _mapper,
+                _mockLogger.Object
+            );
         }
 
         #region AddOrder Tests
 
         /// <summary>
-        /// בדיקה: הוספת הזמנה עם דמיון קביע ובטוח טובט
-        /// Path: HAPPY - צריך להוסיף את הזמנה בהצלחה
+        /// בדיקה: הזמנה עם רשימת פריטים ריקה
+        /// Path: UNHAPPY - צריך לזרוק exception
         /// </summary>
         [Fact]
-        public async Task AddOrder_WithValidOrder_AddsOrderSuccessfully()
+        public async Task AddOrder_WithEmptyOrderItems_ThrowsException()
         {
             // Arrange
-            var dateOnly = DateOnly.FromDateTime(DateTime.Now);
-            var orderDTO = new OrderDTO(1, dateOnly, 100, new List<OrderItemDTO>());
-            var order = new Order { OrderId = 1, UserId = 1, OrderSum = 100, OrderDate = dateOnly };
-            _mockOrderRepository.Setup(x => x.AddOrder(It.IsAny<Order>())).ReturnsAsync(order);
+            var orderDto = new OrderDTO(
+                OrderId:    0,
+                OrderDate:  DateOnly.FromDateTime(DateTime.Today),
+                OrderSum:   0,
+                OrderItems: new List<OrderItemDTO>(),
+                Status: "Pending",
+                UserId: 1
+            );
 
-            // Act
-            var result = await _orderService.AddOrder(orderDTO);
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => _orderService.AddOrder(orderDto)
+            );
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(100, result.OrderSum);
-        }
-
-        /// <summary>
-        /// בדיקה: הוספת הזמנה עם ף זמנה גבוה (9999)
-        /// Path: HAPPY - צריך מהער שההטרטט גם עם רמים בהכה גבוה
-        /// </summary>
-        [Fact]
-        public async Task AddOrder_WithHighOrderSum_AddsOrderSuccessfully()
-        {
-            // Arrange
-            var dateOnly = DateOnly.FromDateTime(DateTime.Now);
-            var orderDTO = new OrderDTO(1, dateOnly, 9999, new List<OrderItemDTO>());
-            var order = new Order { OrderId = 1, UserId = 1, OrderSum = 9999, OrderDate = dateOnly };
-            _mockOrderRepository.Setup(x => x.AddOrder(It.IsAny<Order>())).ReturnsAsync(order);
-
-            // Act
-            var result = await _orderService.AddOrder(orderDTO);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(9999, result.OrderSum);
-        }
-
-        /// <summary>
-        /// בדיקה: הוספת הזמנה עם טוח זה (0)
-        /// Path: UNHAPPY - צריך להטפל הזמנה אחרי עם אפסנות נרמוך
-        /// </summary>
-        [Fact]
-        public async Task AddOrder_WithZeroOrderSum_AddsOrderSuccessfully()
-        {
-            // Arrange
-            var dateOnly = DateOnly.FromDateTime(DateTime.Now);
-            var orderDTO = new OrderDTO(1, dateOnly, 0, new List<OrderItemDTO>());
-            var order = new Order { OrderId = 1, UserId = 1, OrderSum = 0, OrderDate = dateOnly };
-            _mockOrderRepository.Setup(x => x.AddOrder(It.IsAny<Order>())).ReturnsAsync(order);
-
-            // Act
-            var result = await _orderService.AddOrder(orderDTO);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(0, result.OrderSum);
+            _mockOrderRepository.Verify(x => x.AddOrder(It.IsAny<Order>()), Times.Never);
         }
 
         #endregion
@@ -92,15 +62,14 @@ namespace TestWebApiShop.UnitTests
         #region GetOrderById Tests
 
         /// <summary>
-        /// בדיקה: קבלת הזמנה עם ID תקין
-        /// Path: HAPPY - צריך להחזיר את הזמנה
+        /// בדיקה: קבלת הזמנה לפי OrderId קיים
+        /// Path: HAPPY - צריך להחזיר את ההזמנה
         /// </summary>
         [Fact]
-        public async Task GetOrderById_WithValidId_ReturnsOrderDTO()
+        public async Task GetOrderById_WithExistingId_ReturnsOrder()
         {
             // Arrange
-            var dateOnly = DateOnly.FromDateTime(DateTime.Now);
-            var order = new Order { OrderId = 1, UserId = 1, OrderSum = 150, OrderDate = dateOnly };
+            var order = new Order { OrderId = 1, UserId = 1, OrderSum = 200, Status = "Pending" };
             _mockOrderRepository.Setup(x => x.GetOrderById(1)).ReturnsAsync(order);
 
             // Act
@@ -108,41 +77,24 @@ namespace TestWebApiShop.UnitTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(150, result.OrderSum);
+            Assert.Equal(1,   result.OrderId);
+            Assert.Equal(200, result.OrderSum);
         }
 
         /// <summary>
-        /// בדיקה: קבלת הזמנה עם ID לא קיים
-        /// Path: UNHAPPY - צריך להחזיר null
+        /// בדיקה: קבלת הזמנה לפי OrderId שלא קיים
+        /// Path: UNHAPPY - צריך לזרוק exception
         /// </summary>
         [Fact]
-        public async Task GetOrderById_WithInvalidId_ReturnsNull()
+        public async Task GetOrderById_WithNonExistingId_ThrowsException()
         {
             // Arrange
             _mockOrderRepository.Setup(x => x.GetOrderById(999)).ReturnsAsync((Order)null);
 
-            // Act
-            var result = await _orderService.GetOrderById(999);
-
-            // Assert
-            Assert.Null(result);
-        }
-
-        /// <summary>
-        /// בדיקה: קבלת הזמנה עם ID שלילי
-        /// Path: UNHAPPY - צריך להחזיר null כי לID שלילי אין הזמנות
-        /// </summary>
-        [Fact]
-        public async Task GetOrderById_WithNegativeId_ReturnsNull()
-        {
-            // Arrange
-            _mockOrderRepository.Setup(x => x.GetOrderById(-1)).ReturnsAsync((Order)null);
-
-            // Act
-            var result = await _orderService.GetOrderById(-1);
-
-            // Assert
-            Assert.Null(result);
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _orderService.GetOrderById(999)
+            );
         }
 
         #endregion

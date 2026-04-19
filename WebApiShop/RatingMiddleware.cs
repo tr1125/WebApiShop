@@ -1,15 +1,17 @@
 ﻿using Services;
 using Entities;
+using Microsoft.Extensions.Logging;
 
 namespace WebApiShop
 {
 public class RatingMiddleware
 {
     private readonly RequestDelegate _next;
-
-    public RatingMiddleware(RequestDelegate next)
+    private readonly ILogger<RatingMiddleware> _logger;
+    public RatingMiddleware(RequestDelegate next, ILogger<RatingMiddleware> logger)
     {
         _next = next;
+        _logger = logger;
     }
 
     public async Task Invoke(HttpContext httpcontext, IRatingService ratingService)
@@ -40,7 +42,14 @@ public class RatingMiddleware
             RecordDate = recordDate
         };
 
-        await ratingService.AddRating(rating);
+        try
+        {
+            await ratingService.AddRating(rating);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Rating save failed for path={Path}", path);
+        }
 
         await _next(httpcontext);
     }
