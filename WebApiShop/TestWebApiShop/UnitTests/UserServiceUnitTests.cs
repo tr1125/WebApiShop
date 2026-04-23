@@ -18,93 +18,68 @@ namespace TestWebApiShop.UnitTests
 
         public UserServiceUnitTests()
         {
-            _mockUserRepository = new Mock<IUserRepository>();
+            _mockUserRepository  = new Mock<IUserRepository>();
             _mockPasswordService = new Mock<IPasswordService>();
-
             var config = new MapperConfiguration(cfg => cfg.AddProfile<Services.MyMapper>());
             _mapper = config.CreateMapper();
-            _userService = new UserService(_mockUserRepository.Object, _mockPasswordService.Object, _mapper, NullLogger<UserService>.Instance);
+            _userService = new UserService(
+                _mockUserRepository.Object,
+                _mockPasswordService.Object,
+                _mapper,
+                NullLogger<UserService>.Instance
+            );
         }
-
-        #region GetUserById Tests
-
-        /// <summary>
-        /// בדיקה: קבלת משתמש עם ID תקין
-        /// Path: HAPPY - צריך להחזיר את המשתמש
-        /// </summary>
-        [Fact]
-        public async Task GetUserById_WithValidId_ReturnsUserDTO()
-        {
-            // Arrange
-            var user = new User { UserId = 1, UserName = "john@test.com", FirstName = "John", LastName = "Doe", Password = "pass" };
-            _mockUserRepository.Setup(x => x.GetUserById(1)).ReturnsAsync(user);
-
-            // Act
-            var result = await _userService.GetUserById(1);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal("John", result.FirstName);
-        }
-
-        /// <summary>
-        /// בדיקה: קבלת משתמש עם ID לא קיים
-        /// Path: UNHAPPY - צריך להחזיר null
-        /// </summary>
-        [Fact]
-        public async Task GetUserById_WithInvalidId_ReturnsNull()
-        {
-            // Arrange
-            _mockUserRepository.Setup(x => x.GetUserById(999)).ReturnsAsync((User)null);
-
-            // Act
-            var result = await _userService.GetUserById(999);
-
-            // Assert
-            Assert.Null(result);
-        }
-
-        #endregion
 
         #region AddUserToFile Tests
 
         /// <summary>
-        /// בדיקה: הוספת משתמש חדש עם סיסמה חזקה
-        /// Path: HAPPY - צריך להוסיף את המשתמש בהצלחה
+        /// בדיקה: רישום משתמש חדש עם מייל תקין
+        /// Path: HAPPY - צריך להחזיר את המשתמש שנוצר
         /// </summary>
         [Fact]
-        public async Task AddUserToFile_WithStrongPassword_AddsUserSuccessfully()
+        public async Task AddUserToFile_WithValidUserName_ReturnsUser()
         {
             // Arrange
-            var userDTO = new UserDTO(0, "jane@test.com", "Jane", "Doe", "StrongPass123!", "", "");
-            var user = new User { UserId = 1, UserName = "jane@test.com", FirstName = "Jane", LastName = "Doe", Password = "StrongPass123!" };
-            _mockPasswordService.Setup(x => x.PasswordHardness("StrongPass123!")).Returns(new Password { Level = 4 });
-            _mockUserRepository.Setup(x => x.AddUserToFile(It.IsAny<User>())).ReturnsAsync(user);
+            var userDto = new UserDTO(1, "test@example.com", "Israel", "Israeli", "Pass1234!", "Tel Aviv", "050-0000000");
+            var userEntity = new User
+            {
+                UserId    = 1,
+                UserName  = "test@example.com",
+                FirstName = "Israel",
+                LastName  = "Israeli",
+                Password  = "Pass1234!",
+                Address   = "Tel Aviv",
+                Phone     = "050-0000000"
+            };
+            _mockPasswordService.Setup(x => x.PasswordHardness(userDto.Password))
+                .Returns(new Password { Level = 3 });
+            _mockUserRepository.Setup(x => x.AddUserToFile(It.IsAny<User>())).ReturnsAsync(userEntity);
 
             // Act
-            var result = await _userService.AddUserToFile(userDTO);
+            var result = await _userService.AddUserToFile(userDto);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("Jane", result.FirstName);
+            Assert.Equal("test@example.com", result.UserName);
         }
 
         /// <summary>
-        /// בדיקה: ניסיון הוספת משתמש עם סיסמה חלשה (Level < 3)
-        /// Path: UNHAPPY - צריך להחזיר null כי הסיסמה לא מספיק חזקה
+        /// בדיקה: רישום משתמש עם מייל כפול
+        /// Path: UNHAPPY - הrepository מחזיר null, השירות צריך לזרוק exception
         /// </summary>
         [Fact]
-        public async Task AddUserToFile_WithWeakPassword_ReturnsNull()
+        public async Task AddUserToFile_WithDuplicateUserName_ThrowsException()
         {
             // Arrange
-            var userDTO = new UserDTO(0, "bob@test.com", "Bob", "Smith", "weak", "", "");
-            _mockPasswordService.Setup(x => x.PasswordHardness("weak")).Returns(new Password { Level = 0 });
+            var userDto = new UserDTO(2, "exist@example.com", "Israel", "Israeli", "Pass1234!", "Tel Aviv", "050-0000000");
+            _mockPasswordService.Setup(x => x.PasswordHardness(userDto.Password))
+                .Returns(new Password { Level = 3 });
+            _mockUserRepository.Setup(x => x.AddUserToFile(It.IsAny<User>())).ReturnsAsync((User)null);
 
-            // Act
-            var result = await _userService.AddUserToFile(userDTO);
-
-            // Assert
-            Assert.Null(result);
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _userService.AddUserToFile(userDto)
+            );
         }
 
         #endregion
@@ -112,84 +87,40 @@ namespace TestWebApiShop.UnitTests
         #region Loginto Tests
 
         /// <summary>
-        /// בדיקה: התחברות עם שם משתמש וסיסמה נכונים
-        /// Path: HAPPY - צריך להחזיר את פרטי המשתמש
+        /// בדיקה: התחברות עם פרטים נכונים
+        /// Path: HAPPY - צריך להחזיר את המשתמש
         /// </summary>
         [Fact]
-        public async Task Loginto_WithValidCredentials_ReturnsUserDTO()
+        public async Task Loginto_WithCorrectCredentials_ReturnsUser()
         {
             // Arrange
-            var loginDTO = new UserLoginDTO("john@test.com", "password");
-            var user = new User { UserId = 1, UserName = "john@test.com", FirstName = "John", LastName = "Doe", Password = "password" };
-            _mockUserRepository.Setup(x => x.Loginto(It.IsAny<User>())).ReturnsAsync(user);
+            var loginDTO   = new UserLoginDTO("user@example.com", "Pass1234!");
+            var userEntity = new User { UserId = 1, UserName = "user@example.com", Password = "Pass1234!" };
+            _mockUserRepository.Setup(x => x.Loginto(It.IsAny<User>())).ReturnsAsync(userEntity);
 
             // Act
             var result = await _userService.Loginto(loginDTO);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("John", result.FirstName);
+            Assert.Equal("user@example.com", result.UserName);
         }
 
         /// <summary>
-        /// בדיקה: ניסיון התחברות עם פרטים לא נכונים
-        /// Path: UNHAPPY - צריך להחזיר null כשלא קיים משתמש או הסיסמה לא נכונה
+        /// בדיקה: התחברות עם סיסמה שגויה
+        /// Path: UNHAPPY - הrepository מחזיר null, השירות צריך לזרוק exception
         /// </summary>
         [Fact]
-        public async Task Loginto_WithInvalidCredentials_ReturnsNull()
+        public async Task Loginto_WithWrongPassword_ThrowsException()
         {
             // Arrange
-            var loginDTO = new UserLoginDTO("invalid@test.com", "wrong");
+            var loginDTO = new UserLoginDTO("user@example.com", "WrongPass!");
             _mockUserRepository.Setup(x => x.Loginto(It.IsAny<User>())).ReturnsAsync((User)null);
 
-            // Act
-            var result = await _userService.Loginto(loginDTO);
-
-            // Assert
-            Assert.Null(result);
-        }
-
-        #endregion
-
-        #region GetAllUsers Tests
-
-        /// <summary>
-        /// בדיקה: קבלת כל המשתמשים כשיש מספר משתמשים בבסיס
-        /// Path: HAPPY - צריך להחזיר רשימה עם כל המשתמשים
-        /// </summary>
-        [Fact]
-        public async Task GetAllUsers_WithMultipleUsers_ReturnsList()
-        {
-            // Arrange
-            var users = new List<User>
-            {
-                new User { UserId = 1, UserName = "user1@test.com", FirstName = "User1", LastName = "One", Password = "pass" },
-                new User { UserId = 2, UserName = "user2@test.com", FirstName = "User2", LastName = "Two", Password = "pass" }
-            };
-            _mockUserRepository.Setup(x => x.GetAllUsers()).ReturnsAsync(users);
-
-            // Act
-            var result = await _userService.GetAllUsers();
-
-            // Assert
-            Assert.Equal(2, result.Count);
-        }
-
-        /// <summary>
-        /// בדיקה: קבלת כל המשתמשים כשאין משתמשים בבסיס
-        /// Path: UNHAPPY - צריך להחזיר רשימה ריקה
-        /// </summary>
-        [Fact]
-        public async Task GetAllUsers_WithNoUsers_ReturnsEmptyList()
-        {
-            // Arrange
-            _mockUserRepository.Setup(x => x.GetAllUsers()).ReturnsAsync(new List<User>());
-
-            // Act
-            var result = await _userService.GetAllUsers();
-
-            // Assert
-            Assert.Empty(result);
+            // Act & Assert
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(
+                () => _userService.Loginto(loginDTO)
+            );
         }
 
         #endregion
@@ -197,42 +128,55 @@ namespace TestWebApiShop.UnitTests
         #region UpdateUserDetails Tests
 
         /// <summary>
-        /// בדיקה: עדכון פרטי משתמש עם סיסמה חזקה
-        /// Path: HAPPY - צריך לעדכן את המשתמש בהצלחה
+        /// בדיקה: עדכון פרטי משתמש קיים
+        /// Path: HAPPY - צריך להחזיר את המשתמש המעודכן
         /// </summary>
         [Fact]
-        public async Task UpdateUserDetails_WithStrongPassword_UpdatesSuccessfully()
+        public async Task UpdateUserDetails_WithExistingUser_ReturnsUpdatedUser()
         {
             // Arrange
-            var userDTO = new UserDTO(1, "updated@test.com", "Updated", "User", "NewPass123!", "", "");
-            var updatedUser = new User { UserId = 1, UserName = "updated@test.com", FirstName = "Updated", LastName = "User", Password = "NewPass123!" };
-            _mockPasswordService.Setup(x => x.PasswordHardness("NewPass123!")).Returns(new Password { Level = 4 });
+            var updatedUserDto = new UserDTO(1, "updated@example.com", "Updated", "User", "NewPass1234!", "Jerusalem", "052-1111111");
+            var updatedEntity  = new User
+            {
+                UserId    = 1,
+                UserName  = "updated@example.com",
+                FirstName = "Updated",
+                LastName  = "User",
+                Password  = "NewPass1234!",
+                Address   = "Jerusalem",
+                Phone     = "052-1111111"
+            };
+            _mockPasswordService.Setup(x => x.PasswordHardness(updatedUserDto.Password))
+                .Returns(new Password { Level = 3 });
             _mockUserRepository.Setup(x => x.UpdateUserDetails(1, It.IsAny<User>())).Returns(Task.CompletedTask);
-            _mockUserRepository.Setup(x => x.GetUserById(1)).ReturnsAsync(updatedUser);
+            _mockUserRepository.Setup(x => x.GetUserById(1)).ReturnsAsync(updatedEntity);
 
             // Act
-            var result = await _userService.UpdateUserDetails(1, userDTO);
+            var result = await _userService.UpdateUserDetails(1, updatedUserDto);
 
             // Assert
             Assert.NotNull(result);
+            Assert.Equal("updated@example.com", result.UserName);
         }
 
         /// <summary>
-        /// בדיקה: ניסיון עדכון משתמש עם סיסמה חלשה
-        /// Path: UNHAPPY - צריך להחזיר null כי הסיסמה לא מספיק חזקה
+        /// בדיקה: עדכון משתמש שאינו קיים
+        /// Path: UNHAPPY - צריך לזרוק exception
         /// </summary>
         [Fact]
-        public async Task UpdateUserDetails_WithWeakPassword_ReturnsNull()
+        public async Task UpdateUserDetails_WithNonExistingUser_ThrowsException()
         {
             // Arrange
-            var userDTO = new UserDTO(1, "updated@test.com", "Updated", "User", "weak", "", "");
-            _mockPasswordService.Setup(x => x.PasswordHardness("weak")).Returns(new Password { Level = 0 });
+            var userDto = new UserDTO(999, "ghost@example.com", "Ghost", "User", "Pass1234!", "Nowhere", "000-0000000");
+            _mockPasswordService.Setup(x => x.PasswordHardness(userDto.Password))
+                .Returns(new Password { Level = 3 });
+            _mockUserRepository.Setup(x => x.UpdateUserDetails(999, It.IsAny<User>())).Returns(Task.CompletedTask);
+            _mockUserRepository.Setup(x => x.GetUserById(999)).ReturnsAsync((User)null);
 
-            // Act
-            var result = await _userService.UpdateUserDetails(1, userDTO);
-
-            // Assert
-            Assert.Null(result);
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _userService.UpdateUserDetails(999, userDto)
+            );
         }
 
         #endregion

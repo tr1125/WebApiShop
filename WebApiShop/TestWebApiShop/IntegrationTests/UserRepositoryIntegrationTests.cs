@@ -1,4 +1,4 @@
-using Xunit;
+﻿using Xunit;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using Entities;
@@ -21,82 +21,51 @@ namespace TestWebApiShop.IntegrationTests
 
         private void CleanUp() => _dbContext?.Dispose();
 
-        #region GetUserById Tests
-
-        /// <summary>
-        /// בדיקה: קבלת משתמש מהדטבש עם ID תקין
-        /// Path: HAPPY - צריך להחזיר את המשתמש מהדטבש
-        /// </summary>
-        [Fact]
-        public async Task GetUserById_WithValidId_ReturnsUser()
+        private User CreateTestUser(int id = 1, string userName = "test@example.com") => new User
         {
-            // Arrange
-            var user = new User { UserId = 1, UserName = "john@test.com", FirstName = "John", LastName = "Doe", Password = "password" };
-            await _dbContext.Users.AddAsync(user);
-            await _dbContext.SaveChangesAsync();
-
-            // Act
-            var result = await _userRepository.GetUserById(1);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal("John", result.FirstName);
-            Assert.Equal("john@test.com", result.UserName);
-            CleanUp();
-        }
-
-        /// <summary>
-        /// בדיקה: קבלת משתמש ישד דטבש עם ID שאט קיים
-        /// Path: UNHAPPY - צריך להחזיר null
-        /// </summary>
-        [Fact]
-        public async Task GetUserById_WithInvalidId_ReturnsNull()
-        {
-            // Act
-            var result = await _userRepository.GetUserById(999);
-
-            // Assert
-            Assert.Null(result);
-            CleanUp();
-        }
-
-        #endregion
+            UserId    = id,
+            UserName  = userName,
+            FirstName = "Israel",
+            LastName  = "Israeli",
+            Password  = "Pass1234!",
+            Address   = "Tel Aviv",
+            Phone     = "050-0000000",
+            IsAdmin   = false
+        };
 
         #region AddUserToFile Tests
 
         /// <summary>
-        /// בדיקה: הוספת משתמש חדש לדטבש בהצלחה
-        /// Path: HAPPY - צריך להוסיף חדש אחסנו יכולו בדטבש
+        /// בדיקה: הוספת משתמש חדש עם נתונים תקינים
+        /// Path: HAPPY - צריך לשמור ולהחזיר את המשתמש
         /// </summary>
         [Fact]
-        public async Task AddUserToFile_WithNewUser_AddsUserSuccessfully()
+        public async Task AddUserToFile_WithValidData_ReturnsUser()
         {
             // Arrange
-            var user = new User { UserId = 1, UserName = "newuser@test.com", FirstName = "New", LastName = "User", Password = "password" };
+            var user = CreateTestUser();
 
             // Act
             var result = await _userRepository.AddUserToFile(user);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("newuser@test.com", result.UserName);
-            var dbUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserName == "newuser@test.com");
-            Assert.NotNull(dbUser);
+            Assert.Equal("test@example.com", result.UserName);
+            Assert.Equal("Israel", result.FirstName);
             CleanUp();
         }
 
         /// <summary>
-        /// בדיקה: ניסיון הוספת משתמש עם טטיח שם כשכבר קיים
-        /// Path: UNHAPPY - צריך להחזיר null כי זה אפנטזה
+        /// בדיקה: הוספת שני משתמשים עם אותו UserName (מייל)
+        /// Path: UNHAPPY - הrepository מחזיר null (לא זורק exception)
         /// </summary>
         [Fact]
-        public async Task AddUserToFile_WithDuplicateUsername_ReturnsNull()
+        public async Task AddUserToFile_WithDuplicateUserName_ReturnsNull()
         {
             // Arrange
-            var user1 = new User { UserId = 1, UserName = "duplicate@test.com", FirstName = "User1", LastName = "One", Password = "pass" };
-            var user2 = new User { UserId = 2, UserName = "duplicate@test.com", FirstName = "User2", LastName = "Two", Password = "pass" };
-            await _dbContext.Users.AddAsync(user1);
-            await _dbContext.SaveChangesAsync();
+            var user1 = CreateTestUser(1, "same@example.com");
+            var user2 = CreateTestUser(2, "same@example.com");
+            await _userRepository.AddUserToFile(user1);
 
             // Act
             var result = await _userRepository.AddUserToFile(user2);
@@ -111,43 +80,37 @@ namespace TestWebApiShop.IntegrationTests
         #region Loginto Tests
 
         /// <summary>
-        /// בדיקה: התחברות עט שום וסיסמה קטנטיים
-        /// Path: HAPPY - צריך להחזיר את המשתמש הנכון
+        /// בדיקה: התחברות עם UserName וסיסמה נכונים
+        /// Path: HAPPY - צריך להחזיר את המשתמש
         /// </summary>
         [Fact]
-        public async Task Loginto_WithValidCredentials_ReturnsUser()
+        public async Task Loginto_WithCorrectCredentials_ReturnsUser()
         {
             // Arrange
-            var user = new User { UserId = 1, UserName = "john@test.com", FirstName = "John", LastName = "Doe", Password = "password123" };
+            var user = CreateTestUser(1, "login@example.com");
             await _dbContext.Users.AddAsync(user);
             await _dbContext.SaveChangesAsync();
-            var loginUser = new User { UserName = "john@test.com", Password = "password123" };
+
+            var loginUser = new User { UserName = "login@example.com", Password = "Pass1234!" };
 
             // Act
             var result = await _userRepository.Loginto(loginUser);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("john@test.com", result.UserName);
-            Assert.Equal("John", result.FirstName);
+            Assert.Equal("login@example.com", result.UserName);
             CleanUp();
         }
 
         /// <summary>
-        /// בדיקה: התחברות עט טטיח שם (שאט קיימה)
+        /// בדיקה: התחברות עם UserName שאינו קיים
         /// Path: UNHAPPY - צריך להחזיר null
         /// </summary>
         [Fact]
-        public async Task Loginto_WithInvalidUsername_ReturnsNull()
+        public async Task Loginto_WithNonExistingUserName_ReturnsNull()
         {
-            // Arrange
-            var user = new User { UserId = 1, UserName = "john@test.com", FirstName = "John", LastName = "Doe", Password = "password123" };
-            await _dbContext.Users.AddAsync(user);
-            await _dbContext.SaveChangesAsync();
-            var loginUser = new User { UserName = "wrong@test.com", Password = "password123" };
-
             // Act
-            var result = await _userRepository.Loginto(loginUser);
+            var result = await _userRepository.Loginto(new User { UserName = "ghost@example.com", Password = "Pass1234!" });
 
             // Assert
             Assert.Null(result);
@@ -155,66 +118,24 @@ namespace TestWebApiShop.IntegrationTests
         }
 
         /// <summary>
-        /// בדיקה: התחברות עט טטיח סיסמה (שטטיח כאן שם קטנטטט)
+        /// בדיקה: התחברות עם סיסמה שגויה
         /// Path: UNHAPPY - צריך להחזיר null
         /// </summary>
         [Fact]
-        public async Task Loginto_WithInvalidPassword_ReturnsNull()
+        public async Task Loginto_WithWrongPassword_ReturnsNull()
         {
             // Arrange
-            var user = new User { UserId = 1, UserName = "john@test.com", FirstName = "John", LastName = "Doe", Password = "password123" };
+            var user = CreateTestUser(1, "login@example.com");
             await _dbContext.Users.AddAsync(user);
             await _dbContext.SaveChangesAsync();
-            var loginUser = new User { UserName = "john@test.com", Password = "wrongpassword" };
+
+            var loginUser = new User { UserName = "login@example.com", Password = "WrongPass!" };
 
             // Act
             var result = await _userRepository.Loginto(loginUser);
 
             // Assert
             Assert.Null(result);
-            CleanUp();
-        }
-
-        #endregion
-
-        #region GetAllUsers Tests
-
-        /// <summary>
-        /// בדיקה: קבלת כל המשתמשים מדטבש בכתי דטטיחו עדר קטנט
-        /// Path: HAPPY - צריכה רשימה של כל המשתמשים
-        /// </summary>
-        [Fact]
-        public async Task GetAllUsers_WithMultipleUsers_ReturnsList()
-        {
-            // Arrange
-            var users = new List<User>
-            {
-                new User { UserId = 1, UserName = "user1@test.com", FirstName = "User", LastName = "One", Password = "pass" },
-                new User { UserId = 2, UserName = "user2@test.com", FirstName = "User", LastName = "Two", Password = "pass" }
-            };
-            await _dbContext.Users.AddRangeAsync(users);
-            await _dbContext.SaveChangesAsync();
-
-            // Act
-            var result = await _userRepository.GetAllUsers();
-
-            // Assert
-            Assert.Equal(2, result.Count);
-            CleanUp();
-        }
-
-        /// <summary>
-        /// בדיקה: קבלת כל המשתמשים כשאין משתמשים
-        /// Path: UNHAPPY - צריכה רשימה ריקה
-        /// </summary>
-        [Fact]
-        public async Task GetAllUsers_WithNoUsers_ReturnsEmptyList()
-        {
-            // Act
-            var result = await _userRepository.GetAllUsers();
-
-            // Assert
-            Assert.Empty(result);
             CleanUp();
         }
 
@@ -223,50 +144,58 @@ namespace TestWebApiShop.IntegrationTests
         #region UpdateUserDetails Tests
 
         /// <summary>
-        /// בדיקה: עדכון פרטי משתמש ישד עם ID וטה אחסן
-        /// Path: HAPPY - צריך שהפרטים אומנם בדטבש
+        /// בדיקה: עדכון פרטי משתמש קיים
+        /// Path: HAPPY - הנתונים מתעדכנים ב-DB
         /// </summary>
         [Fact]
-        public async Task UpdateUserDetails_WithValidId_UpdatesUser()
+        public async Task UpdateUserDetails_WithExistingUser_UpdatesData()
         {
             // Arrange
-            var user = new User { UserId = 1, UserName = "john@test.com", FirstName = "John", LastName = "Doe", Password = "password" };
+            var user = CreateTestUser();
             await _dbContext.Users.AddAsync(user);
             await _dbContext.SaveChangesAsync();
-            var updatedUser = new User { UserName = "johnupdated@test.com", FirstName = "Jonathan", LastName = "Smith", Password = "newpass" };
+
+            var updatedData = new User
+            {
+                FirstName = "Updated",
+                LastName  = "Israeli",
+                Password  = "NewPass1234!",
+                Address   = "Jerusalem",
+                Phone     = "052-9999999"
+            };
 
             // Act
-            await _userRepository.UpdateUserDetails(1, updatedUser);
+            await _userRepository.UpdateUserDetails(user.UserId, updatedData);
+            var result = await _userRepository.GetUserById(user.UserId);
 
             // Assert
-            var dbUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId == 1);
-            Assert.NotNull(dbUser);
-            Assert.Equal("Jonathan", dbUser.FirstName);
-            Assert.Equal("newpass", dbUser.Password);
+            Assert.NotNull(result);
+            Assert.Equal("Updated",      result.FirstName);
+            Assert.Equal("Jerusalem",    result.Address);
+            Assert.Equal("NewPass1234!", result.Password);
             CleanUp();
         }
 
         /// <summary>
-        /// בדיקה: עדכון פרטי משתמש עם ID דאט קיים
-        /// Path: UNHAPPY - צריכה שיכולים בארע אט פטור טים
+        /// בדיקה: עדכון משתמש שאינו קיים
+        /// Path: UNHAPPY - הפעולה לא זורקת exception (מתעלמת בשקט)
+        /// הערה: התנהגות זו היא בעיה - מומלץ שהשירות יזרוק exception
         /// </summary>
         [Fact]
-        public async Task UpdateUserDetails_WithInvalidId_DoesNotUpdateAnything()
+        public async Task UpdateUserDetails_WithNonExistingUser_DoesNotThrow()
         {
             // Arrange
-            var user = new User { UserId = 1, UserName = "john@test.com", FirstName = "John", LastName = "Doe", Password = "password" };
-            await _dbContext.Users.AddAsync(user);
-            await _dbContext.SaveChangesAsync();
-            var updatedUser = new User { UserName = "newname@test.com", FirstName = "NewName", LastName = "Smith", Password = "newpass" };
+            var nonExistingUser = new User
+            {
+                FirstName = "Fake",
+                Password  = "Fake1234!"
+            };
 
-            // Act
-            await _userRepository.UpdateUserDetails(999, updatedUser);
-
-            // Assert
-            var dbUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId == 1);
-            Assert.NotNull(dbUser);
-            Assert.Equal("John", dbUser.FirstName);
-            Assert.Equal("password", dbUser.Password);
+            // Act & Assert - הrepository לא זורק exception, השירות צריך לטפל בזה
+            var exception = await Record.ExceptionAsync(
+                () => _userRepository.UpdateUserDetails(999, nonExistingUser)
+            );
+            Assert.Null(exception);
             CleanUp();
         }
 

@@ -45,7 +45,12 @@ namespace Services
             }
             User user2 = _mapper.Map<UserDTO, User>(user);
             User userres = await _repository.AddUserToFile(user2);
-            _logger.LogInformation("User registered successfully with id={Id}, username={UserName}", userres?.UserId, user.UserName);
+            if (userres == null)
+            {
+                _logger.LogWarning("AddUser rejected: username already exists for username={UserName}", user.UserName);
+                throw new InvalidOperationException($"A user with the email '{user.UserName}' already exists.");
+            }
+            _logger.LogInformation("User registered successfully with id={Id}, username={UserName}", userres.UserId, user.UserName);
             UserDTO dto = _mapper.Map<User, UserDTO>(userres);
             return dto;
         }
@@ -58,7 +63,7 @@ namespace Services
             if (userres == null)
             {
                 _logger.LogWarning("Login failed for username={UserName}: invalid credentials", oldUser?.UserName);
-                return null;
+                throw new UnauthorizedAccessException("Invalid username or password.");
             }
             _logger.LogInformation("Login successful for username={UserName}", oldUser?.UserName);
             UserDTO dto = _mapper.Map<User, UserDTO>(userres);
@@ -87,6 +92,12 @@ namespace Services
                 }
             }
             User user = _mapper.Map<UserDTO, User>(userToUp);
+            User existing = await _repository.GetUserById(id);
+            if (existing == null)
+            {
+                _logger.LogWarning("UpdateUserDetails: user not found for id={Id}", id);
+                throw new KeyNotFoundException($"User with id {id} was not found.");
+            }
             await _repository.UpdateUserDetails(id, user);
             User updatedUser = await _repository.GetUserById(id);
             _logger.LogInformation("User updated successfully for id={Id}", id);

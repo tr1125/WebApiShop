@@ -30,27 +30,32 @@ namespace Services
             try
             {
                 _logger.LogInformation("AddOrder called: UserId={UserId}, OrderSum={OrderSum}, ItemCount={ItemCount}", order.UserId, order.OrderSum, order.OrderItems?.Count);
-                
-                double calculatedSum = 0;
-                if (order.OrderItems != null)
+
+                if (order.OrderItems == null || order.OrderItems.Count == 0)
                 {
-                    foreach (var item in order.OrderItems)
+                    _logger.LogWarning("AddOrder rejected for UserId={UserId}: no order items", order.UserId);
+                    throw new ArgumentException("Order must contain at least one item.");
+                }
+
+                double calculatedSum = 0;
+                foreach (var item in order.OrderItems)
+                {
+                    var product = await _productRepository.GetProductById(item.ProductId);
+                    if (product == null)
                     {
-                        var product = await _productRepository.GetProductById(item.ProductId);
-                        if (product != null)
-                        {
-                            calculatedSum += product.Price * (item.Quantity ?? 1);
-                        }
+                        _logger.LogWarning("AddOrder rejected: product not found for ProductId={ProductId}", item.ProductId);
+                        throw new KeyNotFoundException($"Product with id {item.ProductId} was not found.");
                     }
+                    calculatedSum += product.Price * (item.Quantity ?? 1);
                 }
 
                 if (order.OrderSum != calculatedSum)
                 {
-                    _logger.LogWarning("Order sum mismatch for UserId={UserId}. Provided: {ProvidedSum}, Calculated: {CalculatedSum}. Using calculated sum.", order.UserId, order.OrderSum, calculatedSum);
+                    _logger.LogWarning("Order sum mismatch for UserId={UserId}. Provided: {ProvidedSum}, Calculated: {CalculatedSum}.", order.UserId, order.OrderSum, calculatedSum);
+                    throw new InvalidOperationException($"Order sum mismatch. Provided: {order.OrderSum}, Calculated: {calculatedSum}.");
                 }
 
                 Order order2 = _mapper.Map<OrderDTO, Order>(order);
-                // ensure the true sum is set
                 order2.OrderSum = calculatedSum;
 
                 _logger.LogInformation("Saving order to DB for UserId={UserId}", order2.UserId);
@@ -73,7 +78,10 @@ namespace Services
             _logger.LogInformation("GetOrderById called with id={Id}", id);
             Order order = await _repository.GetOrderById(id);
             if (order == null)
+            {
                 _logger.LogWarning("Order not found for id={Id}", id);
+                throw new KeyNotFoundException($"Order with id {id} was not found.");
+            }
             OrderDTO dto = _mapper.Map<Order, OrderDTO>(order);
             return dto;
         }
