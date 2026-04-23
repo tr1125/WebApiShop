@@ -24,10 +24,10 @@ namespace Repositories
             var query = _webApiShopContext.Products.Where(product =>
             (desc == null ? (true) : (product.Description.Contains(desc)))
             && ((minPrice == null) ? (true) : (product.Price >= minPrice))
-            && ((name == null) ? (true) : (product.ProductName == name))
+            && ((name == null) ? (true) : (product.ProductName.Contains(name)))
             && ((maxPrice == null) ? (true) : (product.Price <= maxPrice))
             && ((categoryIds.Length == 0) ? (true) : (categoryIds.Contains(product.CategoryId)))
-            && ((color==null) ? (true) : (product.Color==color)))
+            && ((color==null) ? (true) : (product.Color.Contains(color))))
             
             .OrderBy(product => product.Price);
             //var res = _webApiShopContext.Products;

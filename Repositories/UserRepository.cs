@@ -52,6 +52,8 @@ namespace Repositories
                 user.Password = userToUp.Password;
                 user.FirstName = userToUp.FirstName;
                 user.LastName = userToUp.LastName;
+                user.Address = userToUp.Address;
+                user.Phone = userToUp.Phone;
             }
             await _webApiShopContext.SaveChangesAsync();
 
