@@ -34,7 +34,7 @@ namespace Services
             return dto;
         }
 
-        public async Task<UserDTO> AddUserToFile(UserDTO user)
+        public async Task<UserDTO> AddUserToFile(UserRequestDTO user)
         {
             _logger.LogInformation("AddUser called for username={UserName}", user?.UserName);
             Password password = _passwordService.PasswordHardness(user.Password);
@@ -43,7 +43,7 @@ namespace Services
                 _logger.LogWarning("AddUser rejected for username={UserName}: password too weak (level={Level})", user.UserName, password.Level);
                 return null;
             }
-            User user2 = _mapper.Map<UserDTO, User>(user);
+            User user2 = _mapper.Map<UserRequestDTO, User>(user);
             User userres = await _repository.AddUserToFile(user2);
             if (userres == null)
             {
@@ -79,7 +79,7 @@ namespace Services
             return dtos;
         }
 
-        public async Task<UserDTO> UpdateUserDetails(int id, UserDTO userToUp)
+        public async Task<UserDTO> UpdateUserDetails(int id, UserRequestDTO userToUp)
         {
             _logger.LogInformation("UpdateUserDetails called for id={Id}", id);
             if (!string.IsNullOrEmpty(userToUp.Password))
@@ -91,7 +91,7 @@ namespace Services
                     return null;
                 }
             }
-            User user = _mapper.Map<UserDTO, User>(userToUp);
+            User user = _mapper.Map<UserRequestDTO, User>(userToUp);
             User existing = await _repository.GetUserById(id);
             if (existing == null)
             {

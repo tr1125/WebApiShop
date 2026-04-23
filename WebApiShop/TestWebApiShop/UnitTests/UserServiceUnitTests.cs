@@ -40,7 +40,7 @@ namespace TestWebApiShop.UnitTests
         public async Task AddUserToFile_WithValidUserName_ReturnsUser()
         {
             // Arrange
-            var userDto = new UserDTO(1, "test@example.com", "Israel", "Israeli", "Pass1234!", "Tel Aviv", "050-0000000");
+            var userDto = new UserRequestDTO("test@example.com", "Israel", "Israeli", "Pass1234!", "Tel Aviv", "050-0000000");
             var userEntity = new User
             {
                 UserId    = 1,
@@ -71,7 +71,7 @@ namespace TestWebApiShop.UnitTests
         public async Task AddUserToFile_WithDuplicateUserName_ThrowsException()
         {
             // Arrange
-            var userDto = new UserDTO(2, "exist@example.com", "Israel", "Israeli", "Pass1234!", "Tel Aviv", "050-0000000");
+            var userDto = new UserRequestDTO("exist@example.com", "Israel", "Israeli", "Pass1234!", "Tel Aviv", "050-0000000");
             _mockPasswordService.Setup(x => x.PasswordHardness(userDto.Password))
                 .Returns(new Password { Level = 3 });
             _mockUserRepository.Setup(x => x.AddUserToFile(It.IsAny<User>())).ReturnsAsync((User)null);
@@ -135,7 +135,7 @@ namespace TestWebApiShop.UnitTests
         public async Task UpdateUserDetails_WithExistingUser_ReturnsUpdatedUser()
         {
             // Arrange
-            var updatedUserDto = new UserDTO(1, "updated@example.com", "Updated", "User", "NewPass1234!", "Jerusalem", "052-1111111");
+            var updatedUserDto = new UserRequestDTO("updated@example.com", "Updated", "User", "NewPass1234!", "Jerusalem", "052-1111111");
             var updatedEntity  = new User
             {
                 UserId    = 1,
@@ -167,7 +167,7 @@ namespace TestWebApiShop.UnitTests
         public async Task UpdateUserDetails_WithNonExistingUser_ThrowsException()
         {
             // Arrange
-            var userDto = new UserDTO(999, "ghost@example.com", "Ghost", "User", "Pass1234!", "Nowhere", "000-0000000");
+            var userDto = new UserRequestDTO("ghost@example.com", "Ghost", "User", "Pass1234!", "Nowhere", "000-0000000");
             _mockPasswordService.Setup(x => x.PasswordHardness(userDto.Password))
                 .Returns(new Password { Level = 3 });
             _mockUserRepository.Setup(x => x.UpdateUserDetails(999, It.IsAny<User>())).Returns(Task.CompletedTask);

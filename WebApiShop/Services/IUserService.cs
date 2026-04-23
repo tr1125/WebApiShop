@@ -6,11 +6,11 @@ namespace Services
 {
     public interface IUserService
     {
-        Task<UserDTO> AddUserToFile(UserDTO user);
+        Task<UserDTO> AddUserToFile(UserRequestDTO user);
         Task<List<UserDTO>> GetAllUsers();
         Task<UserDTO> GetUserById(int id);
         Task<UserDTO> Loginto(UserLoginDTO oldUser);
-        Task<UserDTO> UpdateUserDetails(int id, UserDTO userToUp);
+        Task<UserDTO> UpdateUserDetails(int id, UserRequestDTO userToUp);
         Task<bool> PromoteToAdmin(int id);
     }
 }

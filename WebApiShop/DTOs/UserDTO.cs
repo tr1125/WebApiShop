@@ -11,8 +11,6 @@ namespace DTOs
         string FirstName,
         [Required]
         string LastName,
-        [Required]
-        string Password,
         string Address,
         string Phone,
         bool IsAdmin = false

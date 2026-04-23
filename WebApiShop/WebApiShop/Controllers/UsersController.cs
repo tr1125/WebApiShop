@@ -61,7 +61,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<UserDTO>> Post([FromBody] UserDTO user)
+        public async Task<ActionResult<UserDTO>> Post([FromBody] UserRequestDTO user)
         {
             try
             {
@@ -107,7 +107,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] UserDTO userToUpdate)
+        public async Task<IActionResult> Put(int id, [FromBody] UserRequestDTO userToUpdate)
         {
             try
             {

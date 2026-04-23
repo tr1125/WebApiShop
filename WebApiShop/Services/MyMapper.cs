@@ -17,7 +17,7 @@ namespace Services
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName.Trim()))
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address != null ? src.Address.Trim() : null))
                 .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone != null ? src.Phone.Trim() : null));
-            CreateMap<UserDTO, User>();
+            CreateMap<UserRequestDTO, User>();
             CreateMap<UserLoginDTO, User>();
             CreateMap<User, UserLoginDTO>();
             CreateMap<Order, OrderDTO>();
