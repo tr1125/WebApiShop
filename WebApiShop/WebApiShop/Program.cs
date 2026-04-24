@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using NLog.Web;
 using WebApiShop;
-
+using StackExchange.Redis;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,6 +36,17 @@ builder.Services.AddScoped<IRatingRepository, RatingRepository>();
 //builder.Services.AddDbContext<WebApiShopContext>(static option => option.UseSqlServer("Data Source=srv2\\pupils;Initial Catalog=329389860_WebApiShop;Integrated Security=True;Trust Server Certificate=True"));
 //builder.Configuration.GetConnectionString("Home");
 builder.Services.AddDbContext<WebApiShopContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Home")));
+
+DotNetEnv.Env.Load();
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = Environment.GetEnvironmentVariable("REDIS_CONNECTION");
+});
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    ConnectionMultiplexer.Connect(Environment.GetEnvironmentVariable("REDIS_CONNECTION"))
+);
 
 // Add services to the container.
 
