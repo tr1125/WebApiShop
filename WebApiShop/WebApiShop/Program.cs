@@ -37,15 +37,14 @@ builder.Services.AddScoped<IRatingRepository, RatingRepository>();
 //builder.Configuration.GetConnectionString("Home");
 builder.Services.AddDbContext<WebApiShopContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Home")));
 
-DotNetEnv.Env.Load();
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = Environment.GetEnvironmentVariable("REDIS_CONNECTION");
+    options.Configuration = builder.Configuration["Redis:ConnectionString"];
 });
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(
-    ConnectionMultiplexer.Connect(Environment.GetEnvironmentVariable("REDIS_CONNECTION"))
+    ConnectionMultiplexer.Connect(builder.Configuration.GetSection("Redis")["ConnectionString"])
 );
 
 // Add services to the container.
@@ -101,6 +100,7 @@ app.UseAuthorization();
 
 app.UseMiddleware<RatingMiddleware>();
 
+app.UseMiddleware<RateLimitMiddleware>();
 
 app.MapControllers();
 
