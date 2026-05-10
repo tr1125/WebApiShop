@@ -1,5 +1,6 @@
 using AutoMapper;
 using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Repositories;
@@ -117,6 +118,7 @@ namespace WebApiShop.Controllers
         }
 
         // Admin only
+        [AdminOnly]
         [HttpPost]
         public async Task<ActionResult<ProductDTO>> Post([FromBody] ProductDTO product)
         {
@@ -142,6 +144,7 @@ namespace WebApiShop.Controllers
         }
 
         // Admin only
+        [AdminOnly]
         [HttpPut("{id}")]
         public async Task<ActionResult<ProductDTO>> Put(int id, [FromBody] ProductDTO product)
         {
@@ -174,6 +177,7 @@ namespace WebApiShop.Controllers
         }
 
         // Admin only
+        [AdminOnly]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {

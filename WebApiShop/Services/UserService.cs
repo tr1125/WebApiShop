@@ -5,6 +5,12 @@ using System.Threading.Tasks;
 using Zxcvbn;
 using DTOs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
 
 
 namespace Services
@@ -15,14 +21,16 @@ namespace Services
         private readonly IPasswordService _passwordService;
         private readonly IMapper _mapper;
         private readonly ILogger<UserService> _logger;
-        public UserService(IUserRepository repository, IPasswordService passwordService, IMapper mapper, ILogger<UserService> logger)
+        private readonly IConfiguration _configuration;
+
+        public UserService(IUserRepository repository, IPasswordService passwordService, IMapper mapper, ILogger<UserService> logger, IConfiguration configuration)
         {
             _repository = repository;
             _passwordService = passwordService;
             _mapper = mapper;
             _logger = logger;
+            _configuration = configuration;
         }
-        
 
         public async Task<UserDTO> GetUserById(int id)
         {
@@ -34,7 +42,7 @@ namespace Services
             return dto;
         }
 
-        public async Task<UserDTO> AddUserToFile(UserRequestDTO user)
+        public async Task<(UserDTO User, string Token)?> AddUserToFile(UserRequestDTO user)
         {
             _logger.LogInformation("AddUser called for username={UserName}", user?.UserName);
             Password password = _passwordService.PasswordHardness(user.Password);
@@ -52,10 +60,11 @@ namespace Services
             }
             _logger.LogInformation("User registered successfully with id={Id}, username={UserName}", userres.UserId, user.UserName);
             UserDTO dto = _mapper.Map<User, UserDTO>(userres);
-            return dto;
+            string token = GenerateToken(dto);
+            return (dto, token);
         }
 
-        public async Task<UserDTO?> Loginto(UserLoginDTO oldUser)
+        public async Task<(UserDTO User, string Token)?> Loginto(UserLoginDTO oldUser)
         {
             _logger.LogInformation("Login attempted for username={UserName}", oldUser?.UserName);
             User user = _mapper.Map<UserLoginDTO, User>(oldUser);
@@ -67,7 +76,8 @@ namespace Services
             }
             _logger.LogInformation("Login successful for username={UserName}", oldUser?.UserName);
             UserDTO dto = _mapper.Map<User, UserDTO>(userres);
-            return dto;
+            string token = GenerateToken(dto);
+            return (dto, token);    
         }
 
         public async Task<List<UserDTO>> GetAllUsers()
@@ -113,6 +123,27 @@ namespace Services
             else
                 _logger.LogInformation("User promoted to admin for id={Id}", id);
             return result;
+        }
+
+        public string GenerateToken(UserDTO user)
+        {
+            var claims = new[]
+            {
+                new Claim("id", user.UserId.ToString()),
+                new Claim("username", user.UserName),
+                new Claim("isAdmin", user.IsAdmin.ToString())
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                expires: DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("Jwt:ExpirationMinutes")),
+                claims: claims,
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
         
     }

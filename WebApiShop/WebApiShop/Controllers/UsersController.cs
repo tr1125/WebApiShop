@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repositories;
 using Services;
@@ -16,12 +17,24 @@ namespace WebApiShop.Controllers
     {
         private readonly IUserService _service;
         private readonly ILogger<UsersController> _logger;
-        public UsersController(IUserService service, ILogger<UsersController> logger)
+        private readonly IWebHostEnvironment _env;
+        public UsersController(IUserService service, ILogger<UsersController> logger, IWebHostEnvironment env)
         {
             _service = service;
             _logger = logger;
+            _env = env;
         }
 
+        private CookieOptions JwtCookieOptions() => new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = _env.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.None,
+            Secure   = !_env.IsDevelopment(), // false on HTTP localhost, true in production
+            Expires  = DateTimeOffset.UtcNow.AddHours(1)
+        };
+
+        // Admin only: get all users
+        [AdminOnly]
         [HttpGet]
         public async Task<ActionResult<List<UserDTO>>> Get()
         {
@@ -39,6 +52,8 @@ namespace WebApiShop.Controllers
             }
         }
 
+        // Logged-in users: get own profile
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> Get(int id)
         {
@@ -67,13 +82,16 @@ namespace WebApiShop.Controllers
             {
                 _logger.LogInformation("AddUser called for username={UserName}", user?.UserName);
                 if (user == null) return BadRequest("User cannot be null");
-                UserDTO user2 = await _service.AddUserToFile(user);
-                if (user2 == null)
+                var result = await _service.AddUserToFile(user);
+                if (result == null)
                 {
                     _logger.LogWarning("AddUser failed (password too weak or duplicate) for username={UserName}", user.UserName);
                     return BadRequest("Failed to add user. Password may not be strong enough.");
                 }
+                var (user2, token) = result.Value;
                 _logger.LogInformation("User created with id={Id}, username={UserName}", user2.UserId, user2.UserName);
+                // Plant the JWT as an HttpOnly cookie so the browser sends it automatically
+                Response.Cookies.Append("jwt", token, JwtCookieOptions());
                 return CreatedAtAction(nameof(Get), new { id = user2.UserId }, user2);
             }
             catch (Exception ex)
@@ -90,13 +108,16 @@ namespace WebApiShop.Controllers
             {
                 _logger.LogInformation("Login attempted for username={UserName}", oldUser?.UserName);
                 if (oldUser == null) return BadRequest("Login data cannot be null");
-                UserDTO user = await _service.Loginto(oldUser);
-                if (user == null)
+                var result = await _service.Loginto(oldUser);
+                if (result == null)
                 {
                     _logger.LogWarning("Login failed for username={UserName}", oldUser.UserName);
                     return Unauthorized();
                 }
+                var (user, token) = result.Value;
                 _logger.LogInformation("Login successful for username={UserName}", oldUser.UserName);
+                // Plant the JWT as an HttpOnly cookie
+                Response.Cookies.Append("jwt", token, JwtCookieOptions());
                 return Ok(user);
             }
             catch (Exception ex)
@@ -106,6 +127,8 @@ namespace WebApiShop.Controllers
             }
         }
 
+        // Logged-in users: update own profile
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] UserRequestDTO userToUpdate)
         {
@@ -129,7 +152,8 @@ namespace WebApiShop.Controllers
             }
         }
 
-        // Admin only
+        // Admin only: promote user to admin
+        [AdminOnly]
         [HttpPost("{id}/promote")]
         public async Task<IActionResult> PromoteToAdmin(int id)
         {
@@ -152,5 +176,12 @@ namespace WebApiShop.Controllers
             }
         }
 
+        // Logout: clear the jwt cookie
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("jwt", new CookieOptions { SameSite = _env.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.None, Secure = !_env.IsDevelopment() });
+            return Ok(new { message = "Logged out" });
+        }
     }
 }

@@ -1,5 +1,6 @@
 using AutoMapper;
 using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repositories;
 using Services;
@@ -18,6 +19,7 @@ namespace WebApiShop.Controllers
             _logger = logger;
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<OrderDTO>> Get(int id)
         {
@@ -40,6 +42,7 @@ namespace WebApiShop.Controllers
         }
 
         // Admin only
+        [AdminOnly]
         [HttpGet]
         public async Task<ActionResult<List<OrderDTO>>> Get()
         {
@@ -57,6 +60,7 @@ namespace WebApiShop.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<List<OrderDTO>>> GetByUserId(int userId)
         {
@@ -74,6 +78,7 @@ namespace WebApiShop.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<OrderDTO>> Post([FromBody] OrderDTO order)
         {
@@ -93,6 +98,7 @@ namespace WebApiShop.Controllers
             }
         }
 
+        [AdminOnly]
         [HttpPut("{id}/status")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateStatusRequest request)
         {

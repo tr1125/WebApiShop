@@ -6,6 +6,7 @@ using Repositories;
 using Entities;
 using DTOs;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Configuration;
 
 namespace TestWebApiShop.UnitTests
 {
@@ -22,11 +23,15 @@ namespace TestWebApiShop.UnitTests
             _mockPasswordService = new Mock<IPasswordService>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<Services.MyMapper>());
             _mapper = config.CreateMapper();
+            var mockConfig = new Mock<IConfiguration>();
+            mockConfig.Setup(c => c["Jwt:Key"]).Returns("test-secret-key-that-is-long-enough");
+            mockConfig.Setup(c => c.GetSection("Jwt:ExpirationMinutes")).Returns(Mock.Of<IConfigurationSection>(s => s.Value == "60"));
             _userService = new UserService(
                 _mockUserRepository.Object,
                 _mockPasswordService.Object,
                 _mapper,
-                NullLogger<UserService>.Instance
+                NullLogger<UserService>.Instance,
+                mockConfig.Object
             );
         }
 
@@ -60,7 +65,7 @@ namespace TestWebApiShop.UnitTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("test@example.com", result.UserName);
+            Assert.Equal("test@example.com", result.Value.User.UserName);
         }
 
         /// <summary>
@@ -103,7 +108,7 @@ namespace TestWebApiShop.UnitTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("user@example.com", result.UserName);
+            Assert.Equal("user@example.com", result.Value.User.UserName);
         }
 
         /// <summary>
