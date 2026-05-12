@@ -5,3 +5,24 @@ services:
     command: redis-server --requirepass "RedisSecret123!"
     ports:
       - "6379:6379"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: designroom-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Connection string to SQL Server — replace <SA_PASSWORD> and <SERVER> with your values
+      ConnectionStrings__Home: "Server=<SERVER>;Database=WebApiShop;User Id=sa;Password=<SA_PASSWORD>;TrustServerCertificate=True;"
+      # Redis — uses the service name 'redis' instead of localhost
+      Redis__ConnectionString: "redis:6379,password=RedisSecret123!"
+      Redis__TTLMinutes: "10"
+      # JWT secret — replace with a strong secret
+      Jwt__Key: "<YOUR_JWT_SECRET_KEY>"
+      Jwt__Issuer: "WebApiShop"
+      Jwt__Audience: "WebApiShop"
