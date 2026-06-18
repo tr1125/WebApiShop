@@ -22,6 +22,16 @@ namespace Services
             _logger = logger;
         }
 
+        public async Task<List<ProductDTO>> GetAllProductsAsync()
+        {
+            _logger.LogInformation("GetAllProductsAsync called");
+            List<Product> products = await _repository.GetAllProductsAsync();
+            if (products == null || products.Count == 0)
+                _logger.LogWarning("GetAllProductsAsync returned no results");
+            else
+                _logger.LogInformation("GetAllProductsAsync found {Count} products", products.Count);
+            return _mapper.Map<List<Product>, List<ProductDTO>>(products);
+        }
         public async Task<(List<ProductDTO> Items, int TotalCount)> GetProductsByConditions(int position, int skip,
             double? minPrice, double? maxPrice,
             string? name, string? desc, int?[] categoryIds, string? color)

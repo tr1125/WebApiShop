@@ -17,6 +17,14 @@ namespace Repositories
         {
             _webApiShopContext = webApiShopContext;
         }
+
+        public async Task<List<Product>> GetAllProductsAsync()
+        {
+            return await _webApiShopContext.Products
+                .Where(product => !product.IsDeleted) 
+                .Include(product => product.Category)
+                .ToListAsync();
+        }
         public async Task<(List<Product> Items, int TotalCount)> GetProductsByConditions(int position,int skip,
             double? minPrice, double? maxPrice,
             string? name, string? desc, int?[] categoryIds, string? color)

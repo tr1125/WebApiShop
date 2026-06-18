@@ -22,22 +22,29 @@ namespace WebApiShop
             var ip = context.Connection.RemoteIpAddress?.ToString();
             var cacheKey = $"ratelimit_{ip}";
 
-            var db = _redis.GetDatabase();
-
-            // מגדיל את המונה ב-1, אם לא קיים יוצר אותו עם ערך 1
-            var count = await db.StringIncrementAsync(cacheKey);
-
-            // אם זו הבקשה הראשונה — מגדיר TTL
-            if (count == 1)
+            try
             {
-                await db.KeyExpireAsync(cacheKey, TimeSpan.FromSeconds(_windowSeconds));
+                var db = _redis.GetDatabase();
+
+                // מגדיל את המונה ב-1, אם לא קיים יוצר אותו עם ערך 1
+                var count = await db.StringIncrementAsync(cacheKey);
+
+                // אם זו הבקשה הראשונה — מגדיר TTL
+                if (count == 1)
+                {
+                    await db.KeyExpireAsync(cacheKey, TimeSpan.FromSeconds(_windowSeconds));
+                }
+
+                if (count > _maxRequests)
+                {
+                    context.Response.StatusCode = 429;
+                    await context.Response.WriteAsync("Too Many Requests");
+                    return;
+                }
             }
-
-            if (count > _maxRequests)
+            catch (RedisException)
             {
-                context.Response.StatusCode = 429;
-                await context.Response.WriteAsync("Too Many Requests");
-                return;
+                // Redis unavailable — allow request to proceed without rate limiting
             }
 
             await _next(context);

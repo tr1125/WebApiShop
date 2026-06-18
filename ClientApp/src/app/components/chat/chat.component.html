@@ -1,0 +1,55 @@
+<button class="chat-toggle" (click)="toggle()">
+  {{ isOpen ? '✕' : '💬' }}
+</button>
+
+<div class="chat-window" *ngIf="isOpen">
+  <div class="chat-header">
+    🛋️ Design Assistant
+  </div>
+
+  <div class="chat-messages">
+    <div class="welcome-msg" *ngIf="messages.length === 0">
+      Hi! I'm your interior design assistant. Tell me what you're looking for and I'll help you find the perfect pieces. 🪑✨
+    </div>
+    <div *ngFor="let m of messages" [class]="'msg ' + m.role">
+      {{ m.content }}
+    </div>
+    <div *ngIf="loading" class="msg assistant typing">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- Model loading indicator -->
+  <div class="camera-overlay" *ngIf="loadingModels">
+    <div class="camera-label">
+      <span class="camera-dot"></span> Loading AI models...
+    </div>
+  </div>
+
+  <!-- Camera overlay — shown while detecting -->
+  <div class="camera-overlay" *ngIf="cameraActive">
+    <video #videoEl autoplay playsinline muted class="camera-preview"></video>
+    <div class="camera-label">
+      <span class="camera-dot"></span> Detecting expression...
+    </div>
+  </div>
+
+  <div class="camera-error" *ngIf="cameraError">{{ cameraError }}</div>
+
+  <div class="chat-input">
+    <button
+      class="camera-btn"
+      (click)="onCameraClick()"
+      [disabled]="cameraActive || loadingModels"
+      title="Add emoji from your expression">
+      📷
+    </button>
+    <textarea
+      [(ngModel)]="input"
+      (keydown)="onKey($event)"
+      placeholder="Ask about our furniture..."
+      rows="1">
+    </textarea>
+    <button (click)="send()" [disabled]="loading">Send</button>
+  </div>
+</div>
