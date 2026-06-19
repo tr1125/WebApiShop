@@ -15,13 +15,15 @@ namespace Services
         private readonly IMapper _mapper;
         private readonly IProductRepository _productRepository;
         private readonly ILogger<OrderService> _logger;
+        private readonly IKafkaProducerService _kafkaProducerService;
 
-        public OrderService(IOrderRepository repository, IMapper mapper, IProductRepository productRepository, ILogger<OrderService> logger)
+        public OrderService(IOrderRepository repository, IMapper mapper, IProductRepository productRepository, ILogger<OrderService> logger, IKafkaProducerService kafkaProducerService)
         {
             _repository = repository;
             _mapper = mapper;
             _productRepository = productRepository;
             _logger = logger;
+            _kafkaProducerService = kafkaProducerService;
         }
 
 
@@ -62,8 +64,13 @@ namespace Services
                 
                 Order orderres = await _repository.AddOrder(order2);
                 _logger.LogInformation("Order saved to DB: OrderId={OrderId}", orderres.OrderId);
-                
+
                 OrderDTO dto = _mapper.Map<Order, OrderDTO>(orderres);
+
+                // Fire-and-log: Kafka failure must not roll back a saved order
+                try { await _kafkaProducerService.ProduceOrderCreatedAsync(dto); }
+                catch (Exception kafkaEx) { _logger.LogError(kafkaEx, "Kafka produce failed for OrderId={OrderId}", dto.OrderId); }
+
                 return dto;
             }
             catch (Exception ex)

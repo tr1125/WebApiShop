@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Confluent.Kafka;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +34,13 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IRatingRepository, RatingRepository>();
+
+// Kafka producer — Singleton so the TCP connection is reused across requests
+builder.Services.AddSingleton<IProducer<string, string>>(_ =>
+    new ProducerBuilder<string, string>(
+        new ProducerConfig { BootstrapServers = builder.Configuration["Kafka:BootstrapServers"] }
+    ).Build());
+builder.Services.AddScoped<IKafkaProducerService, KafkaProducerService>();
 
 builder.Services.AddHttpClient();
 
