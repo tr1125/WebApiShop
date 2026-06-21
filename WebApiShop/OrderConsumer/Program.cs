@@ -1,12 +1,14 @@
-using NLog.Web;
+using NLog;
+using NLog.Extensions.Logging;
 using OrderConsumer;
 
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Logging.ClearProviders();
+builder.Logging.AddNLog("nlog.config");
 builder.Services.AddHostedService<Worker>();
 
-var logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+var logger = LogManager.GetCurrentClassLogger();
 
 try
 {
@@ -20,5 +22,5 @@ catch (Exception ex)
 }
 finally
 {
-    NLog.LogManager.Shutdown();
+    LogManager.Shutdown();
 }

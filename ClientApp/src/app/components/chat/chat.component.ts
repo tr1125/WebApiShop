@@ -1,7 +1,10 @@
 import { Component, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ChatService, ChatMessage } from './chat.service';
+import { DesignRoomStateService } from '../../services/design-room-state';
+import { CanvasItem } from '../../models/canvas.model';
 
 // Emotion → emoji mapping (face-api.js emotion labels)
 const EMOTION_EMOJI: Record<string, string> = {
@@ -36,7 +39,7 @@ export class ChatComponent implements OnDestroy {
   private stream: MediaStream | null = null;
   private faceApiLoaded = false;
 
-  constructor(private chatService: ChatService) {}
+  constructor(private chatService: ChatService, private canvasState: DesignRoomStateService, private router: Router) {}
 
   // ── Chat ──────────────────────────────────────────────────
 
@@ -52,6 +55,34 @@ export class ChatComponent implements OnDestroy {
     this.chatService.send(msg, this.messages.slice(0, -1)).subscribe({
       next: res => {
         this.messages.push({ role: 'assistant', content: res.reply });
+
+        // AI wants to design the canvas
+        if (res.canvasActions?.length) {
+          const items: CanvasItem[] = res.canvasActions.map(a => ({
+            id:        a.id,
+            type:      a.type,
+            productId: a.productId,
+            label:     a.label,
+            x:         a.x,
+            y:         a.y,
+            width:     a.width,
+            height:    a.height,
+            imageURL:  a.imageURL ?? undefined,
+            price:     a.price ?? undefined,
+            color:     a.color ?? undefined,
+          }));
+          this.canvasState.replaceItems(items);
+          // navigate to design page so the canvas is visible
+          this.router.navigate(['/design']);
+        }
+
+        // AI set a floor or wall
+        if (res.floorImageURL) this.canvasState.setFloor(res.floorImageURL);
+        if (res.wallImageURL)  this.canvasState.setWall(res.wallImageURL);
+        if ((res.floorImageURL || res.wallImageURL) && !res.canvasActions?.length) {
+          this.router.navigate(['/design']);
+        }
+
         this.loading = false;
       },
       error: () => {

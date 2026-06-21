@@ -35,6 +35,8 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IRatingRepository, RatingRepository>();
 
+builder.Services.Configure<KafkaSettings>(builder.Configuration.GetSection("Kafka"));
+
 // Kafka producer — Singleton so the TCP connection is reused across requests
 builder.Services.AddSingleton<IProducer<string, string>>(_ =>
     new ProducerBuilder<string, string>(

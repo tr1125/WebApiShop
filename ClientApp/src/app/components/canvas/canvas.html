@@ -169,8 +169,11 @@
             </div>
           </div>
 
-          <div class="w-full h-full relative flex items-center justify-center">
+          <div class="w-full h-full relative flex items-center justify-center"
+            [style.background-color]="!item.imageURL ? (item.color || '#d7ccc8') : 'transparent'"
+            [style.border-radius]="!item.imageURL ? '6px' : '0'">
             <img *ngIf="item.imageURL" [src]="imageUrl(item.imageURL)" class="w-full h-full object-fill pointer-events-none">
+            <span *ngIf="!item.imageURL" class="text-xs font-semibold text-[#3e2723] text-center px-1 pointer-events-none leading-tight">{{ item.label }}</span>
           </div>
         </div>
       </div>

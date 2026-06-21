@@ -1,7 +1,7 @@
 using Confluent.Kafka;
 using DTOs;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace Services
@@ -14,11 +14,11 @@ namespace Services
 
         public KafkaProducerService(
             IProducer<string, string> producer,
-            IConfiguration configuration,
+            IOptions<KafkaSettings> kafkaSettings,
             ILogger<KafkaProducerService> logger)
         {
             _producer = producer;
-            _topic = configuration["Kafka:Topic"] ?? "order-created";
+            _topic = kafkaSettings.Value.Topic;
             _logger = logger;
         }
 
@@ -46,12 +46,18 @@ namespace Services
                 Value = json
             };
 
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             try
             {
-                var result = await _producer.ProduceAsync(_topic, kafkaMessage);
+                var result = await _producer.ProduceAsync(_topic, kafkaMessage, cts.Token);
                 _logger.LogInformation(
                     "Kafka message delivered: Topic={Topic} Partition={Partition} Offset={Offset} OrderId={OrderId}",
                     result.Topic, result.Partition.Value, result.Offset.Value, order.OrderId);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Kafka produce timed out after 5 s for OrderId={OrderId}. Kafka may be offline.", order.OrderId);
+                throw new InvalidOperationException("Kafka broker unreachable (timeout). Order was saved but event was not published.");
             }
             catch (ProduceException<string, string> ex)
             {

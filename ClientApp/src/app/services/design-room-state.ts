@@ -9,10 +9,17 @@ export class DesignRoomStateService {
   private storageKey = 'designRoom_canvas_guest';
   // Guests use sessionStorage (cleared on tab close); logged-in users use localStorage
   private useSession = true;
+  private userId: string = 'guest';
 
   // BehaviorSubject starts empty until setUser() loads the correct user's canvas
   private itemsSubject = new BehaviorSubject<CanvasItem[]>([]);
   public items$: Observable<CanvasItem[]> = this.itemsSubject.asObservable();
+
+  // Floor / wall background images (set by AI or by user)
+  private floorSubject = new BehaviorSubject<string | null>(null);
+  private wallSubject  = new BehaviorSubject<string | null>(null);
+  public floor$: Observable<string | null> = this.floorSubject.asObservable();
+  public wall$:  Observable<string | null> = this.wallSubject.asObservable();
 
   // ---------- user identity ----------
 
@@ -23,6 +30,7 @@ export class DesignRoomStateService {
    *   (session storage is cleared automatically when the browser tab is closed)
    */
   setUser(userId: number | null): void {
+    this.userId = userId !== null ? String(userId) : 'guest';
     if (userId !== null) {
       this.storageKey = `designRoom_canvas_${userId}`;
       this.useSession = false;
@@ -32,6 +40,12 @@ export class DesignRoomStateService {
     }
     // Load whatever this user had saved
     this.itemsSubject.next(this.loadFromStorage());
+    // Load saved floor/wall
+    const s = this.storage();
+    const f = s.getItem(`floor_${this.userId}`);
+    const w = s.getItem(`wall_${this.userId}`);
+    if (f) this.floorSubject.next(f);
+    if (w) this.wallSubject.next(w);
   }
 
   // ---------- read helpers ----------
@@ -66,6 +80,22 @@ export class DesignRoomStateService {
 
   clearCanvas(): void {
     this.publish([]);
+  }
+
+  replaceItems(items: CanvasItem[]): void {
+    this.publish(items);
+  }
+
+  setFloor(imageURL: string): void {
+    const url = imageURL.replace(/\\/g, '/');
+    this.floorSubject.next(url);
+    this.storage().setItem(`floor_${this.userId}`, url);
+  }
+
+  setWall(imageURL: string): void {
+    const url = imageURL.replace(/\\/g, '/');
+    this.wallSubject.next(url);
+    this.storage().setItem(`wall_${this.userId}`, url);
   }
 
   // ---------- private helpers ----------

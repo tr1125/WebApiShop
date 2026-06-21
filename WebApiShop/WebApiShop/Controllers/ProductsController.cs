@@ -42,8 +42,17 @@ namespace WebApiShop.Controllers
 
                 string cacheKey = $"products_{position}_{skip}_{minPrice}_{maxPrice}_{name}_{desc}_{string.Join(",", categoryIds ?? new int?[0])}_{color}";
 
-                var cachedItems = await _cache.GetStringAsync(cacheKey + "_items");
-                var cachedTotal = await _cache.GetStringAsync(cacheKey + "_total");
+                string? cachedItems = null;
+                string? cachedTotal = null;
+                try
+                {
+                    cachedItems = await _cache.GetStringAsync(cacheKey + "_items");
+                    cachedTotal = await _cache.GetStringAsync(cacheKey + "_total");
+                }
+                catch (Exception cacheEx)
+                {
+                    _logger.LogWarning(cacheEx, "Redis unavailable — cache read skipped for GetProducts");
+                }
 
                 if (cachedItems != null && cachedTotal != null)
                 {
@@ -57,18 +66,25 @@ namespace WebApiShop.Controllers
 
                 (List<ProductDTO> products, int total) = await _service.GetProductsByConditions(position, skip, minPrice, maxPrice, name, desc, categoryIds ?? new int?[0], color);
 
-                var cacheOptions = new DistributedCacheEntryOptions
+                try
                 {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_ttlMinutes)
-                };
+                    var cacheOptions = new DistributedCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_ttlMinutes)
+                    };
 
-                var serializeOptions = new JsonSerializerOptions
+                    var serializeOptions = new JsonSerializerOptions
+                    {
+                        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve
+                    };
+
+                    await _cache.SetStringAsync(cacheKey + "_items", JsonSerializer.Serialize(products, serializeOptions), cacheOptions);
+                    await _cache.SetStringAsync(cacheKey + "_total", JsonSerializer.Serialize(total), cacheOptions);
+                }
+                catch (Exception cacheEx)
                 {
-                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve
-                };
-
-                await _cache.SetStringAsync(cacheKey + "_items", JsonSerializer.Serialize(products, serializeOptions), cacheOptions);
-                await _cache.SetStringAsync(cacheKey + "_total", JsonSerializer.Serialize(total), cacheOptions);
+                    _logger.LogWarning(cacheEx, "Redis unavailable — cache write skipped for GetProducts");
+                }
 
                 _logger.LogInformation("GetProducts returned {Count} products (total={Total})", products.Count, total);
                 return Ok(products);
@@ -89,7 +105,16 @@ namespace WebApiShop.Controllers
 
                 string cacheKey = $"product_{id}";
 
-                var cached = await _cache.GetStringAsync(cacheKey);
+                string? cached = null;
+                try
+                {
+                    cached = await _cache.GetStringAsync(cacheKey);
+                }
+                catch (Exception cacheEx)
+                {
+                    _logger.LogWarning(cacheEx, "Redis unavailable — cache read skipped for GetProductById id={Id}", id);
+                }
+
                 if (cached != null)
                 {
                     _logger.LogInformation("GetProductById returned from cache for id={Id}", id);
@@ -103,10 +128,17 @@ namespace WebApiShop.Controllers
                     return NotFound();
                 }
 
-                await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(product), new DistributedCacheEntryOptions
+                try
                 {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_ttlMinutes)
-                });
+                    await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(product), new DistributedCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_ttlMinutes)
+                    });
+                }
+                catch (Exception cacheEx)
+                {
+                    _logger.LogWarning(cacheEx, "Redis unavailable — cache write skipped for GetProductById id={Id}", id);
+                }
 
                 return Ok(product);
             }
@@ -205,13 +237,20 @@ namespace WebApiShop.Controllers
 
         private async Task InvalidateProductCaches(int id)
         {
-            await _cache.RemoveAsync($"product_{id}");
-
-            var server = _redis.GetServer(_redis.GetEndPoints().First());
-            var keys = server.Keys(pattern: "products_*").ToArray();
-            foreach (var key in keys)
+            try
             {
-                await _cache.RemoveAsync(key!);
+                await _cache.RemoveAsync($"product_{id}");
+
+                var server = _redis.GetServer(_redis.GetEndPoints().First());
+                var keys = server.Keys(pattern: "products_*").ToArray();
+                foreach (var key in keys)
+                {
+                    await _cache.RemoveAsync(key!);
+                }
+            }
+            catch (Exception cacheEx)
+            {
+                _logger.LogWarning(cacheEx, "Redis unavailable — cache invalidation skipped for product id={Id}", id);
             }
         }
     }

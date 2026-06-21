@@ -46,8 +46,32 @@
       }
     },
     {
+      "label": "Run AI Service",
+      "type": "shell",
+      "command": "& '../.venv/Scripts/python.exe' -m uvicorn chat_service:app --port 8002 --reload",
+      "options": {
+        "cwd": "${workspaceFolder}/ai_service"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "uvicorn",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Started reloader process",
+          "endsPattern": "Application startup complete"
+        }
+      },
+      "presentation": {
+        "group": "dev",
+        "reveal": "always"
+      }
+    },
+    {
       "label": "Run Full Stack",
-      "dependsOn": ["Run API", "Run Angular"],
+      "dependsOn": ["Run API", "Run Angular", "Run AI Service"],
       "dependsOrder": "parallel",
       "group": {
         "kind": "build",

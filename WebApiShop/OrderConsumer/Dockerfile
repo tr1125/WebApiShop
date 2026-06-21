@@ -13,10 +13,10 @@ RUN dotnet restore OrderConsumer/OrderConsumer.csproj
 COPY . .
 
 # Publish
-RUN dotnet publish OrderConsumer/OrderConsumer.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish OrderConsumer/OrderConsumer.csproj -c Release -o /app/publish
 
 # Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/runtime:9.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
 RUN adduser --disabled-password --gecos "" appuser && chown -R appuser /app

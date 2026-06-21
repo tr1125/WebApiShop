@@ -14,6 +14,7 @@ namespace TestWebApiShop.UnitTests
     {
         private readonly Mock<IOrderRepository>   _mockOrderRepository;
         private readonly Mock<IProductRepository> _mockProductRepository;
+        private readonly Mock<IKafkaProducerService> _mockKafkaProducerService;
         private readonly Mock<ILogger<OrderService>> _mockLogger;
         private readonly IMapper _mapper;
         private readonly OrderService _orderService;
@@ -22,15 +23,16 @@ namespace TestWebApiShop.UnitTests
         {
             _mockOrderRepository   = new Mock<IOrderRepository>();
             _mockProductRepository = new Mock<IProductRepository>();
+            _mockKafkaProducerService = new Mock<IKafkaProducerService>();
             _mockLogger            = new Mock<ILogger<OrderService>>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<Services.MyMapper>());
             _mapper = config.CreateMapper();
-            // סדר נכון: IOrderRepository, IMapper, IProductRepository, ILogger
             _orderService = new OrderService(
                 _mockOrderRepository.Object,
                 _mapper,
                 _mockProductRepository.Object,
-                _mockLogger.Object
+                _mockLogger.Object,
+                _mockKafkaProducerService.Object
             );
         }
 
@@ -200,6 +202,71 @@ namespace TestWebApiShop.UnitTests
             Assert.NotNull(result);
             Assert.Equal(55, result.OrderId);
             _mockOrderRepository.Verify(x => x.AddOrder(It.IsAny<Order>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddOrder_Success_ProducesKafkaMessageExactlyOnce()
+        {
+            var product1 = new Product { ProductId = 1, ProductName = "Cola", Price = 50 };
+            var product2 = new Product { ProductId = 2, ProductName = "Chips", Price = 30 };
+
+            var orderDto = new OrderDTO(
+                OrderId: 0,
+                OrderDate: DateOnly.FromDateTime(DateTime.Today),
+                OrderSum: 130,
+                OrderItems: new List<OrderItemDTO>
+                {
+                    new OrderItemDTO(ProductId: 1, Quantity: 2),
+                    new OrderItemDTO(ProductId: 2, Quantity: 1)
+                },
+                Status: "Pending",
+                UserId: 1
+            );
+
+            _mockProductRepository.Setup(x => x.GetProductById(1)).ReturnsAsync(product1);
+            _mockProductRepository.Setup(x => x.GetProductById(2)).ReturnsAsync(product2);
+            _mockOrderRepository.Setup(x => x.AddOrder(It.IsAny<Order>()))
+                .ReturnsAsync(new Order { OrderId = 99, OrderSum = 130 });
+
+            var result = await _orderService.AddOrder(orderDto);
+
+            Assert.NotNull(result);
+            _mockKafkaProducerService.Verify(x => x.ProduceOrderCreatedAsync(It.IsAny<OrderDTO>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddOrder_KafkaThrows_OrderStillReturnsSuccessfully()
+        {
+            var product1 = new Product { ProductId = 1, ProductName = "Cola", Price = 50 };
+            var product2 = new Product { ProductId = 2, ProductName = "Chips", Price = 30 };
+
+            var orderDto = new OrderDTO(
+                OrderId: 0,
+                OrderDate: DateOnly.FromDateTime(DateTime.Today),
+                OrderSum: 130,
+                OrderItems: new List<OrderItemDTO>
+                {
+                    new OrderItemDTO(ProductId: 1, Quantity: 2),
+                    new OrderItemDTO(ProductId: 2, Quantity: 1)
+                },
+                Status: "Pending",
+                UserId: 1
+            );
+
+            _mockProductRepository.Setup(x => x.GetProductById(1)).ReturnsAsync(product1);
+            _mockProductRepository.Setup(x => x.GetProductById(2)).ReturnsAsync(product2);
+            _mockOrderRepository.Setup(x => x.AddOrder(It.IsAny<Order>()))
+                .ReturnsAsync(new Order { OrderId = 99, OrderSum = 130 });
+
+            _mockKafkaProducerService
+                .Setup(x => x.ProduceOrderCreatedAsync(It.IsAny<OrderDTO>()))
+                .ThrowsAsync(new Exception("Kafka down"));
+
+            var result = await _orderService.AddOrder(orderDto);
+
+            Assert.NotNull(result);
+            Assert.Equal(99, result.OrderId);
+            _mockKafkaProducerService.Verify(x => x.ProduceOrderCreatedAsync(It.IsAny<OrderDTO>()), Times.Once);
         }
 
         #endregion

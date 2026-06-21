@@ -103,6 +103,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
       })
     );
 
+    // Subscribe to floor / wall changes from AI or user
+    this.subs.add(
+      this.stateService.floor$.subscribe(url => { if (url) this.currentFloorImage = url; })
+    );
+    this.subs.add(
+      this.stateService.wall$.subscribe(url => { if (url) this.currentWallImage = url; })
+    );
+
     // All products (for price lookup)
     this.subs.add(
       this.productService.products$.subscribe(products => {
