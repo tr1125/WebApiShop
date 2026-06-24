@@ -1,4 +1,4 @@
-﻿using Entities;
+using Entities;
 using Services;
 using Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -35,6 +35,7 @@ namespace WebApiShop.Controllers
             }
         }
 
+        [AdminOnly]
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] CategoryDTO category)
         {
